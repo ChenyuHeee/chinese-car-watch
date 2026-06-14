@@ -33,6 +33,10 @@ class StockCrawler(BaseCrawler):
     name = "stock"
     request_interval = 2.0
 
+    def parse(self, html: str, **kwargs) -> list[dict]:
+        """Not used — stock data comes from akshare API, not HTML."""
+        return []
+
     def run(self) -> list[dict]:
         """Fetch stock data for all tracked companies."""
         all_rows = []
