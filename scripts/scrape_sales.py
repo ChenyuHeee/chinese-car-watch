@@ -124,10 +124,10 @@ def _detect_month(html: str) -> Optional[str]:
 def _paginate(page_type: str, base_url: str, html: str) -> list[str]:
     """Given the first page HTML, return URLs for all pages."""
     soup = BeautifulSoup(html, "lxml")
-    # find pagination — usually a div with page numbers
-    pager = soup.find("div", class_="page")
+    pager = soup.find("div", class_="xl-data-page")
     if pager is None:
-        # try finding links that look like page numbers
+        pager = soup.find("div", class_="page")
+    if pager is None:
         pager = soup.find("div", class_="fenye")
     urls = [base_url]
     if pager is None:
@@ -136,7 +136,8 @@ def _paginate(page_type: str, base_url: str, html: str) -> list[str]:
     seen = {base_url}
     for a in pager.find_all("a"):
         href = a.get("href", "")
-        if re.search(rf"{page_type}(_\d+)?\.html", href):
+        # Match: /style-2.html, /ev-2.html, /brand-2.html, /factory-2.html
+        if re.search(rf"/{page_type}-\d+\.html", href):
             full = urljoin(BASE, href)
             if full not in seen:
                 urls.append(full)
