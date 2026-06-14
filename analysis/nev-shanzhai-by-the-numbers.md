@@ -18,7 +18,7 @@
 
 新能源车在复刻同一条曲线：
 
-![利润率对比](/auto/static/charts/profit-comparison.png)
+![利润率对比](/auto/static/charts/profit-comparison.png?v=2)
 
 - **2024 年**：利润率 4.3%，还在赚钱。
 - **2025 年**：利润率继续下滑。
@@ -38,7 +38,7 @@
 
 新能源车靠同样的逻辑：
 
-![供应商集中度](/auto/static/charts/supplier-concentration.png)
+![供应商集中度](/auto/static/charts/supplier-concentration.png?v=2)
 
 - **宁德时代** 供应 13 个品牌的电池，市占率 37%
 - **博世** 供应 8 个品牌的底盘和制动系统
@@ -83,7 +83,7 @@
 
 **中国新能源车市场 TOP5 品牌只占 27.3% 的份额。** 这是全部分析中最关键的数字。
 
-![集中度对比](/auto/static/charts/concentration.png)
+![集中度对比](/auto/static/charts/concentration.png?v=2)
 
 成熟行业的集中度远超这个数。中国空调行业达到 85%，全球智能手机超过 70%，美国汽车产业在 1950 年代甚至超过 90%。
 
@@ -95,7 +95,7 @@
 
 基于销量趋势、财务数据、供应链关系、舆情情感四个维度，AutoInsight 的 Multi-Agent 系统对 9 个核心品牌做了 BVS（Brand Viability Score）评级。每次评级由 Red Analyst（找负面证据）和 Blue Analyst（找正面证据）进行辩论，Judge 做最终裁决。
 
-![财务健康矩阵](/auto/static/charts/financial-matrix.png)
+![财务健康矩阵](/auto/static/charts/financial-matrix.png?v=2)
 
 | 品牌 | BVS | 净利润 | 毛利润率 | 负债率 | 核心判断 |
 |------|-----|--------|---------|--------|---------|
