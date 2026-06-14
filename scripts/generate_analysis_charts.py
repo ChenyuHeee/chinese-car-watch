@@ -82,21 +82,20 @@ plt.close()
 print("Chart 2 saved: concentration.png")
 
 # ── Chart 3: Supplier Concentration ──
-fig, ax = plt.subplots(figsize=(10, 5))
+fig, ax = plt.subplots(figsize=(8, 4))
 
-# Data from our SCEM
-suppliers = ["宁德时代\n(电池)", "博世\n(底盘/制动)", "华为\n(智驾)", "弗迪电池\n(电池)", "地平线\n(芯片)", "联发科(MTK)\n(山寨机时代)"]
-brands_served = [13, 8, 6, 5, 4, 4000]
-colors2 = ["#1e40af"]*5 + ["#d97706"]
+# Data from our SCEM (without MTK — break axis or use inset)
+suppliers = ["宁德时代", "博世", "华为", "弗迪电池", "地平线"]
+brands_served = [13, 8, 6, 5, 4]
+colors2 = ["#1e40af"]*4 + ["#d97706"]
 
-bars = ax.barh(suppliers, brands_served, color=colors2, height=0.6)
+bars = ax.barh(suppliers, brands_served, color=colors2[:5], height=0.5)
 for bar, val in zip(bars, brands_served):
-    label = f"{val} 品牌" if val < 100 else f"~{val} 厂商"
-    ax.text(bar.get_width() + 0.5, bar.get_y() + bar.get_height()/2, label, va="center")
+    ax.text(bar.get_width() + 0.3, bar.get_y() + bar.get_height()/2, f"{val} 品牌", va="center", fontsize=11)
 
-ax.set_xlabel("服务品牌/厂商数量")
-ax.set_title("供应链集中度：谁在为行业「造铲子」")
-ax.set_xlim(0, 20)
+ax.set_xlabel("服务品牌数量")
+ax.set_title("供应链集中度（2026）")
+ax.set_xlim(0, 16)
 ax.grid(axis="x", alpha=0.2)
 plt.tight_layout()
 fig.savefig(CHARTS_DIR / "supplier-concentration.png", dpi=100, bbox_inches="tight", facecolor="white")
