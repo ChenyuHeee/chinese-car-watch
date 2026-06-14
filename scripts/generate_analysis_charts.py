@@ -12,9 +12,14 @@ from pathlib import Path
 CHARTS_DIR = Path(__file__).resolve().parent.parent / "charts"
 CHARTS_DIR.mkdir(exist_ok=True)
 
+import matplotlib.font_manager as fm
+# Use explicit font path for CJK support
+font_path = "/System/Library/Fonts/STHeiti Medium.ttc"
+fm.fontManager.addfont(font_path)
+prop = fm.FontProperties(fname=font_path)
+font_name = prop.get_name()
 plt.rcParams.update({
-    "font.sans-serif": ["Heiti TC", "STHeiti", "PingFang SC", "Songti SC"],
-    "font.family": "sans-serif",
+    "font.family": font_name,
     "font.size": 12,
     "axes.titlesize": 14,
     "axes.labelsize": 12,
