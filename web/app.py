@@ -96,6 +96,78 @@ async def list_bvs(
     return {"count": len(results), "results": results}
 
 
+@app.get("/auto/api/scem")
+async def list_scem(limit: int = Query(default=20, le=100)):
+    """List SCEM supply chain exposure scores."""
+    from pipeline.db import get_db
+    db = get_db()
+    rows = db.query("""
+        SELECT target_name, score_label, score, run_date, details
+        FROM agent_results WHERE product='scem'
+        ORDER BY run_date DESC, score DESC
+        LIMIT ?
+    """, (limit,))
+    return {
+        "count": len(rows),
+        "results": [{"brand": r["target_name"], "risk": r["score_label"],
+                      "score": r["score"], "date": r["run_date"]} for r in rows],
+    }
+
+
+@app.get("/auto/api/tdg")
+async def list_tdg(limit: int = Query(default=20, le=100)):
+    """List TDG tech delivery gap scores."""
+    from pipeline.db import get_db
+    db = get_db()
+    rows = db.query("""
+        SELECT target_name, score_label, score, run_date, details
+        FROM agent_results WHERE product='tdg'
+        ORDER BY run_date DESC, score DESC
+        LIMIT ?
+    """, (limit,))
+    return {
+        "count": len(rows),
+        "results": [{"brand": r["target_name"], "gap": r["score_label"],
+                      "delivery": r["score"], "date": r["run_date"]} for r in rows],
+    }
+
+
+@app.get("/auto/api/all-products")
+async def all_products():
+    """Return all product results in a single call (for dashboard)."""
+    from pipeline.db import get_db
+    db = get_db()
+
+    # Get latest run date for each product
+    bvs = db.query("""
+        SELECT target_name, score_label, score
+        FROM agent_results WHERE product='bvs'
+        AND run_date = (SELECT MAX(run_date) FROM agent_results WHERE product='bvs')
+        ORDER BY score DESC
+    """)
+    scem = db.query("""
+        SELECT target_name, score_label, score
+        FROM agent_results WHERE product='scem'
+        AND run_date = (SELECT MAX(run_date) FROM agent_results WHERE product='scem')
+        ORDER BY score DESC
+    """)
+    tdg = db.query("""
+        SELECT target_name, score_label, score
+        FROM agent_results WHERE product='tdg'
+        AND run_date = (SELECT MAX(run_date) FROM agent_results WHERE product='tdg')
+        ORDER BY score DESC
+    """)
+
+    return {
+        "bvs": [{"brand": r["target_name"], "rating": r["score_label"],
+                  "score": r["score"]} for r in bvs],
+        "scem": [{"brand": r["target_name"], "risk": r["score_label"],
+                   "exposure": r["score"]} for r in scem],
+        "tdg": [{"brand": r["target_name"], "gap": r["score_label"],
+                  "delivery": r["score"]} for r in tdg],
+    }
+
+
 @app.get("/auto/api/sales/ranking")
 async def sales_ranking(
     top_n: int = Query(default=20, le=100),

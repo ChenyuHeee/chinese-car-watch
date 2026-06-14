@@ -1,151 +1,144 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Auto · Insight</title>
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--text:#1a1a1a;--text-muted:#555;--accent:#1e40af;--border:#e5e5e5;--max-w:880px}
-    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif;font-size:15px;line-height:1.7;color:var(--text);background:#fff;-webkit-font-smoothing:antialiased}
-    main{max-width:var(--max-w);width:90%;margin:0 auto;padding:72px 0 48px}
-    a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
-    .back{font-size:14px;color:var(--text-muted);margin-bottom:8px}
-    .back a{color:var(--text-muted)}.back a:hover{color:var(--accent)}
-    h1{font-size:30px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px}
-    .subtitle{color:var(--text-muted);font-size:15px;margin-bottom:24px}
-    section{margin-bottom:32px}
-    section h2{font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:12px;padding-bottom:5px;border-bottom:1px solid var(--border)}
-    p{line-height:1.75;color:#333}
-    footer{max-width:var(--max-w);width:90%;margin:0 auto;padding:0 0 40px;font-size:13px;color:#aaa}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
-    .kpi{border:1px solid var(--border);border-radius:8px;padding:16px 20px}
-    .kpi-label{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.03em}
-    .kpi-value{font-size:28px;font-weight:700;margin:4px 0}
-    .kpi-value.up{color:#059669}.kpi-value.down{color:#dc2626}
-    table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:14px}
-    th,td{border:1px solid var(--border);padding:8px 12px;text-align:left}
-    th{background:#f8f8f6;font-weight:600}
-    td.num{text-align:right;font-variant-numeric:tabular-nums}
-    .badge{display:inline-block;padding:0.15em 0.5em;border-radius:999px;font-size:11px;font-weight:600}
-    .badge.nev{background:#ecfdf5;color:#059669}
-    .badge.ice{background:#f5f5f5;color:var(--text-muted)}
-    .rating{display:inline-block;padding:0.2em 0.55em;border-radius:4px;font-size:13px;font-weight:700;min-width:36px;text-align:center}
-    .rating.AAA,.rating.AA{background:#ecfdf5;color:#059669}
-    .rating.A,.rating.BBB{background:#fffbeb;color:#d97706}
-    .rating.BB,.rating.B,.rating.C{background:#fef2f2;color:#dc2626}
-    .loading{color:var(--text-muted);font-size:14px}
-    .error{color:#dc2626;font-size:14px}
-    @media(max-width:640px){main{padding-top:40px}h1{font-size:26px}.grid{grid-template-columns:1fr 1fr}}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auto · Insight</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--text:#1a1a1a;--text-muted:#555;--accent:#1e40af;--border:#e5e5e5;--max-w:880px}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif;font-size:15px;line-height:1.7;color:var(--text);background:#fff;-webkit-font-smoothing:antialiased}
+  main{max-width:var(--max-w);width:90%;margin:0 auto;padding:56px 0 48px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .back{font-size:14px;color:var(--text-muted);margin-bottom:8px}
+  .back a{color:var(--text-muted)}.back a:hover{color:var(--accent)}
+  h1{font-size:30px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px}
+  .subtitle{color:var(--text-muted);font-size:15px;margin-bottom:24px}
+  section{margin-bottom:32px}
+  section h2{font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:12px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+  .kpi{border:1px solid var(--border);border-radius:8px;padding:14px 18px}
+  .kpi-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.03em}
+  .kpi-value{font-size:26px;font-weight:700;margin:3px 0}
+  .kpi-value.good{color:#059669}.kpi-value.warn{color:#d97706}.kpi-value.bad{color:#dc2626}
+  table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:14px}
+  th,td{border:1px solid var(--border);padding:7px 10px;text-align:left}
+  th{background:#f8f8f6;font-weight:600;font-size:13px}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .badge{display:inline-block;padding:0.15em 0.5em;border-radius:999px;font-size:11px;font-weight:600}
+  .badge.nev{background:#ecfdf5;color:#059669}.badge.ice{background:#f5f5f5;color:var(--text-muted)}
+  .tag{display:inline-block;padding:0.2em 0.55em;border-radius:4px;font-size:12px;font-weight:700;min-width:40px;text-align:center}
+  .tag.AAA,.tag.AA{background:#ecfdf5;color:#059669}
+  .tag.A,.tag.BBB{background:#fffbeb;color:#d97706}
+  .tag.BB,.tag.B,.tag.C{background:#fef2f2;color:#dc2626}
+  .tag.critical{background:#fef2f2;color:#dc2626}.tag.high{background:#fffbeb;color:#d97706}
+  .tag.moderate,.tag.low{background:#ecfdf5;color:#059669}
+  footer{max-width:var(--max-w);width:90%;margin:0 auto;padding:0 0 40px;font-size:13px;color:#aaa}
+  .loading{color:var(--text-muted);font-size:14px}
+  @media(max-width:640px){main{padding-top:40px}h1{font-size:26px}.grid{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body>
 <main>
   <header>
     <p class="back"><a href="/">← Insight</a></p>
     <h1>Auto</h1>
-    <p class="subtitle">中国汽车行业数据追踪 · 基于 Multi-Agent 的智能分析 · <span id="month">—</span></p>
+    <p class="subtitle">中国汽车行业数据追踪 · Multi-Agent 智能分析 · <span id="month">—</span></p>
   </header>
 
   <section>
     <h2>Overview</h2>
     <div class="grid">
-      <div class="kpi">
-        <div class="kpi-label">NEV Share (Top 50)</div>
-        <div class="kpi-value up" id="kpi-nev">—</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Total Sales</div>
-        <div class="kpi-value" id="kpi-total">—</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Top Brand</div>
-        <div class="kpi-value" id="kpi-brand">—</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">BVS Brands Rated</div>
-        <div class="kpi-value" id="kpi-bvs">—</div>
-      </div>
+      <div class="kpi"><div class="kpi-label">NEV Share</div><div class="kpi-value good" id="kpi-nev">—</div></div>
+      <div class="kpi"><div class="kpi-label">Top Brand</div><div class="kpi-value" id="kpi-brand">—</div></div>
+      <div class="kpi"><div class="kpi-label">BVS Best</div><div class="kpi-value good" id="kpi-bvs">—</div></div>
+      <div class="kpi"><div class="kpi-label">Supply Risk</div><div class="kpi-value warn" id="kpi-scem">—</div></div>
     </div>
   </section>
 
   <section>
     <h2>Sales Ranking</h2>
-    <table>
-      <thead><tr><th>#</th><th>Model</th><th>Brand</th><th>Type</th><th class="num">Sales</th></tr></thead>
-      <tbody id="table-sales"><tr><td colspan="5" class="loading">Loading…</td></tr></tbody>
-    </table>
+    <table><thead><tr><th>#</th><th>Model</th><th>Brand</th><th>Type</th><th class="num">Sales</th></tr></thead>
+    <tbody id="table-sales"></tbody></table>
   </section>
 
   <section>
-    <h2>Brand Viability Score</h2>
-    <table>
-      <thead><tr><th>Brand</th><th>Rating</th><th class="num">Score</th></tr></thead>
-      <tbody id="table-bvs"><tr><td colspan="3" class="loading">No ratings yet — run BVS agent</td></tr></tbody>
-    </table>
+    <h2>Brand Viability Score (BVS)</h2>
+    <table><thead><tr><th>Brand</th><th>Rating</th><th class="num">Score</th></tr></thead>
+    <tbody id="table-bvs"></tbody></table>
+  </section>
+
+  <section>
+    <h2>Supply Chain Exposure (SCEM)</h2>
+    <table><thead><tr><th>Brand</th><th>Risk</th><th class="num">Exposure</th></tr></thead>
+    <tbody id="table-scem"></tbody></table>
+  </section>
+
+  <section>
+    <h2>Tech Delivery Gap (TDG)</h2>
+    <table><thead><tr><th>Brand</th><th>Delivery</th><th class="num">Score</th></tr></thead>
+    <tbody id="table-tdg"></tbody></table>
   </section>
 </main>
-
 <footer>
-  <p><a href="https://github.com/ChenyuHeee/chinese-car-watch">GitHub</a> · Data: <a href="https://xl.16888.com">xl.16888.com</a> · Auto-generated · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></p>
+  <p><a href="https://github.com/ChenyuHeee/chinese-car-watch">GitHub</a> · xl.16888.com · Auto-generated · CC BY 4.0</p>
   <p>仅供参考，不构成投资建议 · Chenyu He &copy; 2026</p>
 </footer>
 
 <script>
 const API = '/auto/api';
 
-async function load() {
+!(async function main() {
+  // 1. Sales stats
   try {
-    const statsRes = await fetch(`${API}/stats`);
-    if (!statsRes.ok) throw new Error(`Stats: ${statsRes.status}`);
-    const stats = await statsRes.json();
+    const s = await (await fetch(`${API}/stats`)).json();
+    document.getElementById('month').textContent = s.month || '—';
+    document.getElementById('kpi-nev').textContent = (s.nev_share_pct || 0) + '%';
+    document.getElementById('kpi-brand').textContent = (s.top_brands || [])[0]?.[0] || '—';
+  } catch(e) { console.error(e); }
 
-    document.getElementById('month').textContent = stats.month || 'N/A';
-    document.getElementById('kpi-nev').textContent = (stats.nev_share_pct || 0) + '%';
-    document.getElementById('kpi-total').textContent = ((stats.total_sales || 0) / 10000).toFixed(1) + '万';
-    if (stats.top_brands && stats.top_brands.length) {
-      document.getElementById('kpi-brand').textContent = stats.top_brands[0][0];
+  // 2. Sales ranking
+  try {
+    const s = await (await fetch(`${API}/sales/ranking?top_n=20`)).json();
+    const t = document.getElementById('table-sales');
+    t.innerHTML = (s.results || []).map(r =>
+      `<tr><td>${r.rank}</td><td>${r.model}</td><td>${r.brand}</td>
+       <td><span class="badge ${r.is_nev?'nev':'ice'}">${r.is_nev?'NEV':'ICE'}</span></td>
+       <td class="num">${Number(r.sales).toLocaleString()}</td></tr>`
+    ).join('');
+  } catch(e) { console.error(e); }
+
+  // 3. All products (BVS + SCEM + TDG)
+  try {
+    const p = await (await fetch(`${API}/all-products`)).json();
+
+    // BVS
+    if (p.bvs && p.bvs.length) {
+      document.getElementById('kpi-bvs').textContent = p.bvs[0].rating;
+      document.getElementById('table-bvs').innerHTML = p.bvs.map(r =>
+        `<tr><td>${r.brand}</td><td><span class="tag ${r.rating}">${r.rating}</span></td>
+         <td class="num">${r.score}</td></tr>`
+      ).join('');
     }
 
-    // Sales ranking
-    const salesRes = await fetch(`${API}/sales/ranking?top_n=20`);
-    if (salesRes.ok) {
-      const data = await salesRes.json();
-      const tbody = document.getElementById('table-sales');
-      tbody.innerHTML = '';
-      for (const r of data.results || []) {
-        const tr = document.createElement('tr');
-        const typeBadge = r.is_nev
-          ? '<span class="badge nev">NEV</span>'
-          : '<span class="badge ice">ICE</span>';
-        tr.innerHTML = `<td>${r.rank}</td><td>${r.model}</td><td>${r.brand}</td><td>${typeBadge}</td><td class="num">${Number(r.sales).toLocaleString()}</td>`;
-        tbody.appendChild(tr);
-      }
+    // SCEM
+    if (p.scem && p.scem.length) {
+      document.getElementById('kpi-scem').textContent = p.scem[p.scem.length-1].risk || '—';
+      document.getElementById('table-scem').innerHTML = p.scem.map(r =>
+        `<tr><td>${r.brand}</td><td><span class="tag ${r.risk}">${r.risk}</span></td>
+         <td class="num">${r.exposure}</td></tr>`
+      ).join('');
     }
 
-    // BVS ratings
-    const bvsRes = await fetch(`${API}/bvs?limit=20`);
-    if (bvsRes.ok) {
-      const bvsData = await bvsRes.json();
-      document.getElementById('kpi-bvs').textContent = bvsData.count || 0;
-      if (bvsData.results && bvsData.results.length) {
-        const tbody = document.getElementById('table-bvs');
-        tbody.innerHTML = '';
-        for (const r of bvsData.results) {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${r.brand}</td><td><span class="rating ${r.rating}">${r.rating}</span></td><td class="num">${r.score}</td>`;
-          tbody.appendChild(tr);
-        }
-      }
+    // TDG
+    if (p.tdg && p.tdg.length) {
+      document.getElementById('table-tdg').innerHTML = p.tdg.map(r =>
+        `<tr><td>${r.brand}</td><td>${r.gap}% gap</td>
+         <td class="num">${r.delivery}</td></tr>`
+      ).join('');
     }
-  } catch (e) {
-    console.error(e);
-    document.getElementById('month').textContent = '连接失败';
-    document.getElementById('table-sales').innerHTML = '<tr><td colspan="5" class="error">API 未连接</td></tr>';
-  }
-}
-
-load();
+  } catch(e) { console.error(e); }
+})();
 </script>
 </body>
 </html>
