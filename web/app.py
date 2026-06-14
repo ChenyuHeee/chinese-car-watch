@@ -424,6 +424,28 @@ async def list_tdg(limit: int = Query(default=20, le=100)):
     }
 
 
+@app.get("/auto/api/sales/ranking")
+async def sales_ranking(
+    top_n: int = Query(default=20, le=100),
+    month: str = Query(default=None),
+):
+    """Get sales ranking."""
+    from pipeline.db import get_db
+    db = get_db()
+    rows = db.get_latest_sales() if not month else db.query(
+        "SELECT * FROM sales_monthly WHERE month=? ORDER BY rank LIMIT ?", (month, top_n)
+    )
+    return {
+        "month": rows[0]["month"] if rows else None,
+        "results": [
+            {"rank": r["rank"], "model": r["model_name"], "brand": r["brand_name"],
+             "sales": r["sales_volume"], "is_nev": bool(r["is_nev"]),
+             "price": r["price_range"]}
+            for r in rows[:top_n]
+        ],
+    }
+
+
 @app.get("/auto/api/all-products")
 async def all_products():
     """Return all product results in a single call (for dashboard)."""
