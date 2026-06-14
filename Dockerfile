@@ -14,6 +14,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # App code
 COPY . .
 
+# Run as non-root user
+RUN addgroup --system app && adduser --system --ingroup app app
+RUN chown -R app:app /app
+USER app
+
 # Data volume
 VOLUME /app/data
 

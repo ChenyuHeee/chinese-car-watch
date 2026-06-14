@@ -16,6 +16,15 @@ log = logging.getLogger(__name__)
 
 app = FastAPI(title="AutoInsight", version="0.1.0")
 
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    log.exception("Unhandled error on %s %s", request.method, request.url)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"},
+    )
+
 STATIC = Path(__file__).parent / "static"
 TEMPLATES = Path(__file__).parent / "templates"
 
@@ -133,7 +142,7 @@ async def overview_stats():
 
     latest = db.get_latest_sales()
     if not latest:
-        return {"error": "No data"}
+        raise HTTPException(status_code=404, detail="No sales data available")
 
     total_sales = sum(r["sales_volume"] for r in latest)
     nev_sales = sum(r["sales_volume"] for r in latest if r["is_nev"])

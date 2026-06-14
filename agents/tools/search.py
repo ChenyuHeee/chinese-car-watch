@@ -1,11 +1,16 @@
 """
 Search tools for AG2 agents.
-Currently uses web scraping, can be upgraded to Tavily/SerpAPI.
+
+Currently uses a lightweight web-based approach.
+For production, upgrade to a proper search API:
+  - Tavily (https://tavily.com) — AI-optimized search
+  - SerpAPI (https://serpapi.com) — Google/Bing search
+  - Bing Search API (Azure)
+  - DuckDuckGo Instant Answer API (free, no key needed)
 """
 
 import json
 import logging
-from urllib.parse import quote
 
 import requests
 
@@ -19,31 +24,42 @@ SEARCH_HEADERS = {
 
 
 def search_news(query: str, num_results: int = 8) -> str:
-    """Search for recent auto industry news.
+    """Search for recent auto industry news using DuckDuckGo (no API key needed).
 
     Args:
         query: search query (in Chinese or English)
         num_results: max number of results
     """
-    encoded = quote(query)
-    url = f"https://www.google.com/search?q={encoded}+汽车&tbm=nws&num={num_results}&hl=zh-CN"
-
     try:
-        resp = requests.get(url, headers=SEARCH_HEADERS, timeout=10)
+        # Use DuckDuckGo Instant Answer API — free, no key required
+        resp = requests.get(
+            "https://api.duckduckgo.com/",
+            params={"q": f"{query} 汽车", "format": "json", "no_html": 1, "skip_disambig": 1},
+            headers=SEARCH_HEADERS,
+            timeout=10,
+        )
         resp.raise_for_status()
+        data = resp.json()
 
-        from bs4 import BeautifulSoup
-        soup = BeautifulSoup(resp.text, "html.parser")
         results = []
-        for g in soup.select(".SoaBEf, .WlydOe")[:num_results]:
-            title_el = g.select_one(".nDgy9d, .mCBkyc")
-            snippet_el = g.select_one(".GI74Re, .GI74Re")
-            link_el = g.select_one("a")
+        # Abstract
+        if data.get("AbstractText"):
             results.append({
-                "title": title_el.get_text() if title_el else "",
-                "snippet": snippet_el.get_text()[:300] if snippet_el else "",
-                "url": link_el["href"] if link_el and link_el.get("href") else "",
+                "title": data.get("AbstractSource", "DuckDuckGo"),
+                "snippet": data["AbstractText"][:500],
+                "url": data.get("AbstractURL", ""),
             })
+        # Related topics
+        for topic in data.get("RelatedTopics", [])[:num_results - 1]:
+            if isinstance(topic, dict) and topic.get("Text"):
+                results.append({
+                    "title": topic.get("FirstURL", "").split("/")[-1].replace("_", " "),
+                    "snippet": topic["Text"][:300],
+                    "url": topic.get("FirstURL", ""),
+                })
+
+        if not results:
+            return json.dumps({"message": f"No results found for '{query}'", "query": query}, ensure_ascii=False)
 
         return json.dumps(results, ensure_ascii=False, indent=2)
 
@@ -67,12 +83,10 @@ def fetch_url_content(url: str, max_chars: int = 5000) -> str:
         from bs4 import BeautifulSoup
         soup = BeautifulSoup(resp.text, "html.parser")
 
-        # Remove scripts and styles
         for tag in soup(["script", "style", "nav", "footer", "header"]):
             tag.decompose()
 
         text = soup.get_text(separator="\n", strip=True)
-        # Clean up whitespace
         lines = [line.strip() for line in text.split("\n") if line.strip()]
         text = "\n".join(lines)
 
