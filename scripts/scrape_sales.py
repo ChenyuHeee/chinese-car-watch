@@ -114,7 +114,15 @@ def _clean_number(s: str) -> str:
 
 
 def _detect_month(html: str) -> Optional[str]:
-    """Try to extract the reporting month from page text, e.g. '2026年5月'."""
+    """Extract the reporting month from page text.
+    The page shows '销量排行榜 (2026.05)' — format is YYYY.MM in parentheses.
+    Fallback: '2026年5月' pattern in headings.
+    """
+    # Primary pattern: (2026.05) in page breadcrumb/heading
+    m = re.search(r"\((\d{4})\.(\d{2})\)", html)
+    if m:
+        return f"{m.group(1)}{m.group(2)}"
+    # Fallback: 2026年5月
     m = re.search(r"(\d{4})\s*年\s*(\d{1,2})\s*月", html)
     if m:
         return f"{m.group(1)}{int(m.group(2)):02d}"
