@@ -139,11 +139,14 @@ def _simple_md(md: str) -> str:
 
 
 def _inline(text: str) -> str:
-    """Handle inline markdown: bold, italic, code, links."""
+    """Handle inline markdown: images, bold, italic, code, links."""
     import re
+    # Images: ![alt](url)
+    text = re.sub(r'!\[([^\]]*)\]\(([^\)]+)\)', r'<img src="\2" alt="\1" style="max-width:100%">', text)
     text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
     text = re.sub(r'\*(.+?)\*', r'<em>\1</em>', text)
     text = re.sub(r'`([^`]+)`', r'<code>\1</code>', text)
+    # Links (after images to avoid double-match)
     text = re.sub(r'\[([^\]]+)\]\(([^\)]+)\)', r'<a href="\2">\1</a>', text)
     return text
 
