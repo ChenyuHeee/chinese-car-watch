@@ -63,24 +63,22 @@ class FinancialCrawler(BaseCrawler):
         """Fetch A-share financials via THS."""
         df = ak.stock_financial_abstract_ths(symbol=co["symbol"], indicator="按报告期")
         rows = []
-        key_cols = {
-            "报告期": "report_date",
-            "营业总收入": "revenue",
-            "营业总收入同比增长率": "revenue_yoy",
-            "净利润": "net_profit",
-            "净利润同比增长率": "net_profit_yoy",
-            "销售毛利率": "gross_margin",
-            "销售净利率": "net_margin",
-            "净资产收益率": "roe",
-            "资产负债率": "debt_ratio",
-            "基本每股收益": "eps",
-            "每股经营现金流": "ocf_per_share",
-        }
+        revenue_cols = {"营业总收入", "净利润"}
         for _, row in df.iterrows():
-            r = {"brand": co["brand"], "symbol": co["symbol"], "market": "a"}
-            for cn, en in key_cols.items():
-                val = row.get(cn)
-                r[en] = _parse_pct_or_num(val)
+            r = {
+                "brand": co["brand"], "symbol": co["symbol"], "market": "a",
+                "report_date": str(row.get("报告期", "")),
+                "revenue": _parse_revenue(row.get("营业总收入")),
+                "revenue_yoy": _parse_pct_or_num(row.get("营业总收入同比增长率")),
+                "net_profit": _parse_revenue(row.get("净利润")),
+                "net_profit_yoy": _parse_pct_or_num(row.get("净利润同比增长率")),
+                "gross_margin": _parse_pct_or_num(row.get("销售毛利率")),
+                "net_margin": _parse_pct_or_num(row.get("销售净利率")),
+                "roe": _parse_pct_or_num(row.get("净资产收益率")),
+                "debt_ratio": _parse_pct_or_num(row.get("资产负债率")),
+                "eps": _parse_pct_or_num(row.get("基本每股收益")),
+                "ocf_per_share": _parse_pct_or_num(row.get("每股经营现金流")),
+            }
             rows.append(r)
         return rows
 
@@ -90,38 +88,66 @@ class FinancialCrawler(BaseCrawler):
             symbol=co["symbol"], indicator="累计季报"
         )
         rows = []
-        key_cols = {
-            "REPORT_DATE": "report_date",
-            "OPERATE_INCOME": "revenue",
-            "OPERATE_INCOME_YOY": "revenue_yoy",
-            "GROSS_PROFIT_RATIO": "gross_margin",
-            "NET_PROFIT_RATIO": "net_margin",
-            "PARENT_HOLDER_NETPROFIT": "net_profit",
-            "PARENT_HOLDER_NETPROFIT_YOY": "net_profit_yoy",
-            "ROE_AVG": "roe",
-            "DEBT_ASSET_RATIO": "debt_ratio",
-            "BASIC_EPS": "eps",
-        }
         for _, row in df.iterrows():
-            r = {"brand": co["brand"], "symbol": co["symbol"], "market": "us"}
-            for cn, en in key_cols.items():
-                val = row.get(cn)
-                r[en] = _parse_pct_or_num(val)
+            r = {
+                "brand": co["brand"], "symbol": co["symbol"], "market": "us",
+                "report_date": str(row.get("REPORT_DATE", "")),
+                "revenue": _parse_revenue(row.get("OPERATE_INCOME")),
+                "revenue_yoy": _parse_pct_or_num(row.get("OPERATE_INCOME_YOY")),
+                "net_profit": _parse_revenue(row.get("PARENT_HOLDER_NETPROFIT")),
+                "net_profit_yoy": _parse_pct_or_num(row.get("PARENT_HOLDER_NETPROFIT_YOY")),
+                "gross_margin": _parse_pct_or_num(row.get("GROSS_PROFIT_RATIO")),
+                "net_margin": _parse_pct_or_num(row.get("NET_PROFIT_RATIO")),
+                "roe": _parse_pct_or_num(row.get("ROE_AVG")),
+                "debt_ratio": _parse_pct_or_num(row.get("DEBT_ASSET_RATIO")),
+                "eps": _parse_pct_or_num(row.get("BASIC_EPS")),
+                "ocf_per_share": 0,
+            }
             rows.append(r)
         return rows
 
 
 def _parse_pct_or_num(val) -> float:
-    """Parse akshare values: handle NaN, percentage strings, numeric."""
+    """Parse akshare values: NaN, '155.11亿', '23.30%', '1.7100', numeric."""
     import pandas as pd
     if pd.isna(val) or val is None:
         return 0.0
     if isinstance(val, str):
-        val = val.replace("%", "").replace("亿", "").replace(",", "")
+        val = val.strip()
+        # "155.11亿" → 155.11 (in 亿)
+        if "亿" in val:
+            try:
+                return float(val.replace("亿", "").replace(",", ""))
+            except ValueError:
+                return 0.0
+        # "23.30%" → 23.30
+        val = val.replace("%", "").replace(",", "")
         try:
             return float(val)
         except ValueError:
             return 0.0
+    return float(val) if val else 0.0
+
+
+def _parse_revenue(val) -> float:
+    """Parse revenue values. A-share returns '1502.25亿', US returns raw 元."""
+    import pandas as pd
+    if pd.isna(val) or val is None:
+        return 0.0
+    if isinstance(val, str):
+        val = val.strip()
+        if "亿" in val:
+            try:
+                return float(val.replace("亿", "").replace(",", ""))
+            except ValueError:
+                return 0.0
+        try:
+            return float(val.replace(",", "")) / 1e8  # raw 元 → 亿
+        except ValueError:
+            return 0.0
+    # US stocks return raw 元 (e.g., 5.2e10)
+    if isinstance(val, (int, float)) and abs(val) > 1e8:
+        return val / 1e8
     return float(val) if val else 0.0
 
 
