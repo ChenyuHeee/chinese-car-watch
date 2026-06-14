@@ -146,9 +146,11 @@ def query_stock(brand: str, days: int = 30) -> str:
     db = get_db()
     rows = db.query("""
         SELECT trade_date, close, open, high, low, volume
-        FROM stock_prices WHERE brand=?
+        FROM stock_prices WHERE brand=? OR stock_code IN (
+            SELECT stock_code FROM stock_prices WHERE brand=?
+        )
         ORDER BY trade_date DESC LIMIT ?
-    """, (brand, days))
+    """, (brand, brand, days))
     if not rows:
         return json.dumps({"message": f"No stock data for '{brand}'"})
     # Compute trend
