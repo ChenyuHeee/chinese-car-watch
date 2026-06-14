@@ -178,6 +178,11 @@ if __name__ == "__main__":
     rows = crawler.run()
     if rows:
         save_financials(rows)
-        for brand in set(r["brand"] for r in rows):
-            latest = max(r for r in rows if r["brand"] == brand)
-            print(f"  {brand}: rev={latest.get('revenue',0):.0f} margin={latest.get('gross_margin',0):.1f}% debt={latest.get('debt_ratio',0):.1f}%")
+        for brand in sorted(set(r["brand"] for r in rows)):
+            brand_rows = [r for r in rows if r["brand"] == brand]
+            latest = max(brand_rows, key=lambda r: str(r.get("report_date", "")))
+            rev = latest.get("revenue", 0)
+            margin = latest.get("gross_margin", 0)
+            debt = latest.get("debt_ratio", 0)
+            profit = latest.get("net_profit", 0)
+            print(f"  {brand}: rev={rev:.0f} margin={margin:.1f}% profit={profit:.0f} debt={debt:.1f}%")
