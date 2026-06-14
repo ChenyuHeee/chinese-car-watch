@@ -78,14 +78,23 @@ def _simple_md(md: str) -> str:
     out = []
     in_list = False
     for line in lines:
-        # Headings
-        if line.startswith("### "):
+        # Horizontal rule
+        if line.strip() in ("---", "***", "___") or line.strip() == "---":
             if in_list: out.append("</ul>"); in_list = False
-            out.append(f"<h3>{line[4:]}</h3>")
+            out.append("<hr>")
+            continue
+        # Headings
+        if line.startswith("# "):
+            if in_list: out.append("</ul>"); in_list = False
+            out.append(f"<h1>{line[2:]}</h1>")
             continue
         if line.startswith("## "):
             if in_list: out.append("</ul>"); in_list = False
             out.append(f"<h2>{line[3:]}</h2>")
+            continue
+        if line.startswith("### "):
+            if in_list: out.append("</ul>"); in_list = False
+            out.append(f"<h3>{line[4:]}</h3>")
             continue
         # Blockquote
         if line.startswith("> "):
