@@ -2,7 +2,7 @@
 
 **The open-source toolkit for tracking China's automotive industry with data, not opinions.**
 
-[![Weekly Scrape](https://github.com/CHANGEME/china-auto-trends/actions/workflows/scrape-weekly.yml/badge.svg)](https://github.com/CHANGEME/china-auto-trends/actions/workflows/scrape-weekly.yml)
+[![Weekly Scrape](https://github.com/ChenyuHeee/china-auto-trends/actions/workflows/scrape-weekly.yml/badge.svg)](https://github.com/ChenyuHeee/china-auto-trends/actions/workflows/scrape-weekly.yml)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Data Updated](https://img.shields.io/badge/data-weekly-brightgreen)]()
 
@@ -44,7 +44,7 @@ china-auto-trends/
 
 ```bash
 # 1. Clone
-git clone https://github.com/CHANGEME/china-auto-trends.git
+git clone https://github.com/ChenyuHeee/china-auto-trends.git
 cd china-auto-trends
 
 # 2. Install

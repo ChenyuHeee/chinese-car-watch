@@ -2,7 +2,7 @@
 
 **用代码和数据追踪中国汽车行业，而非人云亦云。**
 
-[![Weekly Scrape](https://github.com/CHANGEME/china-auto-trends/actions/workflows/scrape-weekly.yml/badge.svg)](https://github.com/CHANGEME/china-auto-trends/actions/workflows/scrape-weekly.yml)
+[![Weekly Scrape](https://github.com/ChenyuHeee/china-auto-trends/actions/workflows/scrape-weekly.yml/badge.svg)](https://github.com/ChenyuHeee/china-auto-trends/actions/workflows/scrape-weekly.yml)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Data Updated](https://img.shields.io/badge/data-weekly-brightgreen)]()
 
@@ -42,7 +42,7 @@ china-auto-trends/
 ## 快速开始
 
 ```bash
-git clone https://github.com/CHANGEME/china-auto-trends.git
+git clone https://github.com/ChenyuHeee/china-auto-trends.git
 cd china-auto-trends
 
 pip install -r requirements.txt
