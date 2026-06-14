@@ -1,4 +1,4 @@
-# Contributing to China Auto Trends
+# Contributing to Chinese Car Watch
 
 Thanks for your interest! This project tracks China's auto industry through open data and code.
 

@@ -1,8 +1,8 @@
-# 🚗 China Auto Trends · 中国汽车趋势追踪
+# 🚗 Chinese Car Watch · 中国汽车观察
 
 **用代码和数据追踪中国汽车行业，而非人云亦云。**
 
-[![Weekly Scrape](https://github.com/ChenyuHeee/china-auto-trends/actions/workflows/scrape-weekly.yml/badge.svg)](https://github.com/ChenyuHeee/china-auto-trends/actions/workflows/scrape-weekly.yml)
+[![Weekly Scrape](https://github.com/ChenyuHeee/chinese-car-watch/actions/workflows/scrape-weekly.yml/badge.svg)](https://github.com/ChenyuHeee/chinese-car-watch/actions/workflows/scrape-weekly.yml)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Data Updated](https://img.shields.io/badge/data-weekly-brightgreen)]()
 
@@ -24,7 +24,7 @@
 ## 仓库结构
 
 ```
-china-auto-trends/
+chinese-car-watch/
 ├── data/                   # 结构化 CSV（月度快照）
 │   ├── sales/              #   车型销量排行
 │   └── brands/             #   品牌/厂商销量排行
@@ -42,8 +42,8 @@ china-auto-trends/
 ## 快速开始
 
 ```bash
-git clone https://github.com/ChenyuHeee/china-auto-trends.git
-cd china-auto-trends
+git clone https://github.com/ChenyuHeee/chinese-car-watch.git
+cd chinese-car-watch
 
 pip install -r requirements.txt
 

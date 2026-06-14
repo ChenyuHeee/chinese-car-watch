@@ -1,8 +1,8 @@
-# 🚗 China Auto Trends
+# 🚗 Chinese Car Watch
 
 **The open-source toolkit for tracking China's automotive industry with data, not opinions.**
 
-[![Weekly Scrape](https://github.com/ChenyuHeee/china-auto-trends/actions/workflows/scrape-weekly.yml/badge.svg)](https://github.com/ChenyuHeee/china-auto-trends/actions/workflows/scrape-weekly.yml)
+[![Weekly Scrape](https://github.com/ChenyuHeee/chinese-car-watch/actions/workflows/scrape-weekly.yml/badge.svg)](https://github.com/ChenyuHeee/chinese-car-watch/actions/workflows/scrape-weekly.yml)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Data Updated](https://img.shields.io/badge/data-weekly-brightgreen)]()
 
@@ -25,7 +25,7 @@ This is a CS-trained observer's attempt to track this industry with:
 ## What's inside / 仓库里有什么
 
 ```
-china-auto-trends/
+chinese-car-watch/
 ├── data/                   # Structured CSVs (monthly snapshots)
 │   ├── sales/              #   Model-level sales ranking
 │   └── brands/             #   Brand & manufacturer ranking
@@ -44,8 +44,8 @@ china-auto-trends/
 
 ```bash
 # 1. Clone
-git clone https://github.com/ChenyuHeee/china-auto-trends.git
-cd china-auto-trends
+git clone https://github.com/ChenyuHeee/chinese-car-watch.git
+cd chinese-car-watch
 
 # 2. Install
 pip install -r requirements.txt

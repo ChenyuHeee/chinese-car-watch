@@ -37,7 +37,7 @@ jobs:
         if: steps.scrape.outputs.scrape_exit == '0'
         run: |
           git config user.name "data-bot"
-          git config user.email "data-bot@china-auto-trends.dev"
+          git config user.email "data-bot@chinese-car-watch.dev"
           git add data/ charts/
           if git diff --cached --quiet; then
             echo "No changes to commit"

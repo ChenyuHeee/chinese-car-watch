@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chinese Car Watch · 中国汽车观察</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --orange: #d2991d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg); color: var(--text);
+    max-width: 960px; margin: 0 auto; padding: 2rem 1rem;
+  }
+  h1 { font-size: 1.8rem; margin-bottom: 0.25rem; }
+  h1 small { font-size: 0.9rem; color: var(--muted); font-weight: 400; }
+  h2 { font-size: 1.2rem; margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+  .subtitle { color: var(--muted); margin-bottom: 2rem; }
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem; margin-bottom: 2rem;
+  }
+  .kpi {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.25rem;
+  }
+  .kpi-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .kpi-value { font-size: 2rem; font-weight: 700; margin: 0.25rem 0; }
+  .kpi-value.up { color: var(--green); }
+  .kpi-value.down { color: var(--red); }
+  .kpi-value.warn { color: var(--orange); }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+  th, td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .badge {
+    display: inline-block; padding: 0.15em 0.5em; border-radius: 999px;
+    font-size: 0.75rem; font-weight: 600;
+  }
+  .badge.nev { background: rgba(63,185,80,0.15); color: var(--green); }
+  .badge.ice { background: rgba(139,148,158,0.15); color: var(--muted); }
+  .footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--muted); }
+  .footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<h1>🚗 Chinese Car Watch <small>中国汽车观察</small></h1>
+<p class="subtitle">Auto-updated monthly · Data: xl.16888.com · <span id="month">—</span></p>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-label">NEV Share (Top 50)</div>
+    <div class="kpi-value up" id="kpi-nev">—</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Total Top-50 Sales</div>
+    <div class="kpi-value" id="kpi-total">—</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Top Brand</div>
+    <div class="kpi-value" id="kpi-brand">—</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">NEVs in Top 10</div>
+    <div class="kpi-value up" id="kpi-top10">—</div>
+  </div>
+</div>
+
+<h2>🏆 Top 20 Models</h2>
+<table id="table-models">
+  <thead><tr><th>#</th><th>Model</th><th>Type</th><th>Sales</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<h2>🏭 Top 15 Brands</h2>
+<table id="table-brands">
+  <thead><tr><th>#</th><th>Brand</th><th>Sales</th><th>Share</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<h2>⚡ Top 10 EV Models</h2>
+<table id="table-ev">
+  <thead><tr><th>#</th><th>Model</th><th>Sales</th><th>Price</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<div class="footer">
+  <p>
+    <a href="https://github.com/ChenyuHeee/chinese-car-watch">GitHub</a> ·
+    Data: <a href="https://xl.16888.com">xl.16888.com</a> ·
+    Updated weekly · CC BY 4.0
+  </p>
+</div>
+
+<script>
+// Fetch the latest JSON summary and populate the dashboard
+(async function() {
+  const dirResp = await fetch('https://raw.githubusercontent.com/ChenyuHeee/chinese-car-watch/main/charts/');
+  const dirText = await dirResp.text();
+  // Find latest summary JSON
+  const matches = dirText.match(/summary-(\d{6})\.json/g);
+  if (!matches) return;
+  const latest = matches.sort().pop();
+  const resp = await fetch(`https://raw.githubusercontent.com/ChenyuHeee/chinese-car-watch/main/charts/${latest}`);
+  const data = await resp.json();
+
+  // Month
+  const m = data.month;
+  document.getElementById('month').textContent = `${m.slice(0,4)}-${m.slice(4,6)}`;
+  document.title = `Chinese Car Watch · ${m.slice(0,4)}-${m.slice(4,6)}`;
+
+  // KPIs
+  const ms = data.model_stats;
+  document.getElementById('kpi-nev').textContent = ms.nev_pct + '%';
+  document.getElementById('kpi-total').textContent = (ms.total_sales / 10000).toFixed(1) + '万';
+  document.getElementById('kpi-brand').textContent = ms.top_brands[0][0];
+
+  // NEVs in top 10
+  const nevNames = new Set((data.ev_stats?.top10 || []).map(r => r.name));
+  let nevTop10 = 0;
+  for (const r of ms.top10.slice(0, 10)) {
+    if (nevNames.has(r.name)) nevTop10++;
+  }
+  document.getElementById('kpi-top10').textContent = nevTop10 + '/10';
+
+  // Models table
+  const modelTbody = document.getElementById('table-models').querySelector('tbody');
+  for (const r of (ms.top10 || []).slice(0, 20)) {
+    const isNEV = nevNames.has(r.name);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.rank}</td><td>${r.name} <span class="badge ${isNEV ? 'nev' : 'ice'}">${isNEV ? 'NEV' : 'ICE'}</span></td><td class="num">${Number(r.sales).toLocaleString()}</td>`;
+    modelTbody.appendChild(tr);
+  }
+  // fill remaining from raw data if needed...
+
+  // Brands table
+  const brandResp = await fetch('https://raw.githubusercontent.com/ChenyuHeee/chinese-car-watch/main/charts/' + latest.replace('summary', 'report').replace('json', 'md'));
+  const brandText = await brandResp.text();
+  // Parse brand table from markdown
+  const brandSection = brandText.match(/## Top 15 Brands[\s\S]*?\n\n/);
+  const brandLines = brandText.split('\n').filter(l => l.startsWith('|') && l.includes('|') && !l.includes('---') && !l.includes('Rank'));
+  const brandTbody = document.getElementById('table-brands').querySelector('tbody');
+  let brandCount = 0;
+  for (const line of brandLines) {
+    if (brandCount >= 15) break;
+    const cells = line.split('|').filter(c => c.trim());
+    if (cells.length >= 3) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${cells[0].trim()}</td><td>${cells[1].trim()}</td><td class="num">${cells[2].trim()}</td><td class="num">${cells[3]?.trim() || '—'}</td>`;
+      brandTbody.appendChild(tr);
+      brandCount++;
+    }
+  }
+
+  // EV table
+  const evTbody = document.getElementById('table-ev').querySelector('tbody');
+  const evTop10 = data.ev_stats?.top10 || [];
+  for (const r of evTop10.slice(0, 10)) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.rank}</td><td>${r.name}</td><td class="num">${Number(r.sales).toLocaleString()}</td><td>${r.price_range || '—'}</td>`;
+    evTbody.appendChild(tr);
+  }
+})();
+</script>
+</body>
+</html>
