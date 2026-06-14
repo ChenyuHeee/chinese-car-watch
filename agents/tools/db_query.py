@@ -135,11 +135,45 @@ def query_latest_ranking(top_n: int = 20) -> str:
     )
 
 
-# AG2 tool registry — tools are registered as python functions
+def query_stock(brand: str, days: int = 30) -> str:
+    """Query recent stock price data for a listed auto company.
+
+    Args:
+        brand: brand name (e.g. '比亚迪', '蔚来')
+        days: number of recent trading days
+    """
+    from pipeline.db import get_db
+    db = get_db()
+    rows = db.query("""
+        SELECT trade_date, close, open, high, low, volume
+        FROM stock_prices WHERE brand=?
+        ORDER BY trade_date DESC LIMIT ?
+    """, (brand, days))
+    if not rows:
+        return json.dumps({"message": f"No stock data for '{brand}'"})
+    # Compute trend
+    prices = [r["close"] for r in reversed(rows)]
+    if len(prices) >= 2:
+        change = (prices[-1] - prices[0]) / prices[0] * 100
+        trend = f"{change:+.1f}% over {len(prices)} days"
+    else:
+        trend = "insufficient data"
+    return json.dumps({
+        "brand": brand,
+        "latest_close": rows[0]["close"],
+        "latest_date": rows[0]["trade_date"],
+        "trend": trend,
+        "recent": [{"date": r["trade_date"], "close": r["close"], "volume": r["volume"]}
+                    for r in rows[:10]],
+    }, ensure_ascii=False, indent=2)
+
+
+# AG2 tool registry
 DB_TOOLS = [
     query_sales,
     query_news,
     query_sentiment,
     query_supply_chain,
     query_latest_ranking,
+    query_stock,
 ]
