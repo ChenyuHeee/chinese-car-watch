@@ -31,6 +31,114 @@ TEMPLATES = Path(__file__).parent / "templates"
 app.mount("/auto/static", StaticFiles(directory=str(STATIC)), name="static")
 
 
+@app.get("/auto/analysis/shanzhai")
+async def analysis_shanzhai():
+    """The Shanzhai-NEV data-driven analysis."""
+    import markdown
+    path = Path(__file__).parent.parent / "analysis" / "nev-shanzhai-by-the-numbers.md"
+    if not path.exists():
+        return HTMLResponse("<h1>Not found</h1>", status_code=404)
+    md_text = path.read_text(encoding="utf-8")
+    # Simple markdown→HTML (headings, tables, bold, lists)
+    html_body = _simple_md(md_text)
+    return HTMLResponse(f"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>新能源「山寨化」· AutoInsight</title>
+<style>
+  :root{{--text:#1a1a1a;--muted:#555;--accent:#1e40af;--border:#e5e5e5;--max-w:880px}}
+  body{{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif;font-size:16px;line-height:1.85;color:var(--text);background:#fff;-webkit-font-smoothing:antialiased}}
+  main{{max-width:var(--max-w);width:90%;margin:0 auto;padding:56px 0 48px}}
+  a{{color:var(--accent);text-decoration:none}}a:hover{{text-decoration:underline}}
+  .back{{font-size:14px;color:var(--muted);margin-bottom:32px}}
+  h1{{font-size:30px;margin-bottom:8px}}h2{{font-size:20px;margin:36px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border)}}
+  h3{{font-size:17px;margin:24px 0 8px}}
+  p{{margin-bottom:14px}}
+  table{{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px}}
+  th,td{{border:1px solid var(--border);padding:8px 14px;text-align:left}}
+  th{{background:#f8f8f6;font-weight:600}}
+  blockquote{{border-left:3px solid var(--accent);padding:8px 20px;margin:16px 0;color:var(--muted);font-size:15px;background:#f8f8f6}}
+  ul,ol{{margin:8px 0 16px 24px}}li{{margin-bottom:4px}}
+  code{{background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:14px}}
+  em{{font-style:italic}}
+  footer{{margin-top:48px;padding-top:16px;border-top:1px solid var(--border);font-size:13px;color:#aaa}}
+</style></head>
+<body><main>
+<p class="back"><a href="/auto">← AutoInsight</a></p>
+{html_body}
+<footer><p>AutoInsight · <a href="https://github.com/ChenyuHeee/chinese-car-watch">GitHub</a> · 仅供参考，不构成投资建议</p></footer>
+</main></body></html>""")
+
+
+def _simple_md(md: str) -> str:
+    """Minimal markdown→HTML converter (no external deps needed)."""
+    import re
+    lines = md.split("\n")
+    out = []
+    in_list = False
+    for line in lines:
+        # Headings
+        if line.startswith("### "):
+            if in_list: out.append("</ul>"); in_list = False
+            out.append(f"<h3>{line[4:]}</h3>")
+            continue
+        if line.startswith("## "):
+            if in_list: out.append("</ul>"); in_list = False
+            out.append(f"<h2>{line[3:]}</h2>")
+            continue
+        # Blockquote
+        if line.startswith("> "):
+            if in_list: out.append("</ul>"); in_list = False
+            out.append(f"<blockquote>{_inline(line[2:])}</blockquote>")
+            continue
+        # Tables
+        if "|" in line and line.count("|") >= 2:
+            if in_list: out.append("</ul>"); in_list = False
+            cells = [c.strip() for c in line.split("|")[1:-1]]
+            if all(c.replace("-","").replace(":","") == "" for c in cells):
+                continue  # separator row
+            tag = "th" if "---" in "".join(cells) or (out and "</thead>" not in "".join(out[-3:])) else "td"
+            row = "".join(f"<{tag}>{_inline(c)}</{tag}>" for c in cells)
+            if tag == "th" and (not out or not out[-1].startswith("<table")):
+                out.append("<table>")
+            if not out or out[-1] == "</tr>":
+                pass
+            out.append(f"<tr>{row}</tr>")
+            # Close table on next non-table line
+            continue
+        elif out and out[-1].startswith("<tr>"):
+            out.append("</table>")
+        # Unordered list
+        if line.startswith("- "):
+            if not in_list:
+                out.append("<ul>")
+                in_list = True
+            out.append(f"<li>{_inline(line[2:])}</li>")
+            continue
+        elif in_list:
+            out.append("</ul>")
+            in_list = False
+        # Bold
+        line = _inline(line)
+        if line.strip():
+            out.append(f"<p>{line}</p>")
+        elif out and out[-1] != "</table>":
+            out.append("")
+    if in_list: out.append("</ul>")
+    return "\n".join(out)
+
+
+def _inline(text: str) -> str:
+    """Handle inline markdown: bold, italic, code, links."""
+    import re
+    text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
+    text = re.sub(r'\*(.+?)\*', r'<em>\1</em>', text)
+    text = re.sub(r'`([^`]+)`', r'<code>\1</code>', text)
+    text = re.sub(r'\[([^\]]+)\]\(([^\)]+)\)', r'<a href="\2">\1</a>', text)
+    return text
+
+
 @app.get("/auto/brand/{brand_name}")
 async def brand_page(brand_name: str):
     """Brand detail page — server-side rendered."""
