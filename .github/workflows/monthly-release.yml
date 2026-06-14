@@ -1,0 +1,49 @@
+name: Monthly Data Release
+
+on:
+  schedule:
+    # 1st of each month at 10:00 UTC
+    - cron: "0 10 1 * *"
+  workflow_dispatch:
+    inputs:
+      month:
+        description: "Month in YYYYMM format (leave empty for latest)"
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate release assets
+        run: |
+          MONTH=${MONTH:-$(date +%Y%m)}
+          python scripts/generate_charts.py --month "$MONTH"
+          echo "month=$MONTH" >> "$GITHUB_ENV"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "data-${{ env.month }}"
+          name: "📊 ${{ env.month }} Monthly Data"
+          body_path: charts/report-${{ env.month }}.md
+          files: |
+            data/sales/${{ env.month[:4] }}/${{ env.month }}_*.csv
+            data/brands/${{ env.month[:4] }}/${{ env.month }}_*.csv
+            charts/summary-${{ env.month }}.json
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
