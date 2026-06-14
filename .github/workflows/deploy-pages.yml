@@ -24,9 +24,18 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Copy latest data to docs/
+        run: |
+          cp charts/summary-202605.json docs/latest.json
+          # Also copy the latest report as markdown
+          cp charts/report-202605.md docs/latest-report.md
+
       - uses: actions/configure-pages@v4
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/
+
       - id: deployment
         uses: actions/deploy-pages@v4

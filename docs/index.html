@@ -104,15 +104,9 @@
 </div>
 
 <script>
-// Fetch the latest JSON summary and populate the dashboard
+// Fetch local data assets and populate the dashboard
 (async function() {
-  const dirResp = await fetch('https://raw.githubusercontent.com/ChenyuHeee/chinese-car-watch/main/charts/');
-  const dirText = await dirResp.text();
-  // Find latest summary JSON
-  const matches = dirText.match(/summary-(\d{6})\.json/g);
-  if (!matches) return;
-  const latest = matches.sort().pop();
-  const resp = await fetch(`https://raw.githubusercontent.com/ChenyuHeee/chinese-car-watch/main/charts/${latest}`);
+  const resp = await fetch('latest.json');
   const data = await resp.json();
 
   // Month
@@ -134,39 +128,31 @@
   }
   document.getElementById('kpi-top10').textContent = nevTop10 + '/10';
 
-  // Models table
-  const modelTbody = document.getElementById('table-models').querySelector('tbody');
+  // Models table (merge top 20 models with NEV badge)
+  const modelTbody = document.querySelector('#table-models tbody');
   for (const r of (ms.top10 || []).slice(0, 20)) {
     const isNEV = nevNames.has(r.name);
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${r.rank}</td><td>${r.name} <span class="badge ${isNEV ? 'nev' : 'ice'}">${isNEV ? 'NEV' : 'ICE'}</span></td><td class="num">${Number(r.sales).toLocaleString()}</td>`;
     modelTbody.appendChild(tr);
   }
-  // fill remaining from raw data if needed...
 
-  // Brands table
-  const brandResp = await fetch('https://raw.githubusercontent.com/ChenyuHeee/chinese-car-watch/main/charts/' + latest.replace('summary', 'report').replace('json', 'md'));
-  const brandText = await brandResp.text();
-  // Parse brand table from markdown
-  const brandSection = brandText.match(/## Top 15 Brands[\s\S]*?\n\n/);
-  const brandLines = brandText.split('\n').filter(l => l.startsWith('|') && l.includes('|') && !l.includes('---') && !l.includes('Rank'));
-  const brandTbody = document.getElementById('table-brands').querySelector('tbody');
-  let brandCount = 0;
-  for (const line of brandLines) {
-    if (brandCount >= 15) break;
-    const cells = line.split('|').filter(c => c.trim());
-    if (cells.length >= 3) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${cells[0].trim()}</td><td>${cells[1].trim()}</td><td class="num">${cells[2].trim()}</td><td class="num">${cells[3]?.trim() || '—'}</td>`;
-      brandTbody.appendChild(tr);
-      brandCount++;
-    }
+  // Brands table — parsed from the summary JSON
+  const brandTbody = document.querySelector('#table-brands tbody');
+  for (const [name, sales] of (ms.top_brands || []).slice(0, 15)) {
+    const share = ((sales / ms.total_sales) * 100).toFixed(2);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td></td><td>${name}</td><td class="num">${Number(sales).toLocaleString()}</td><td class="num">${share}%</td>`;
+    brandTbody.appendChild(tr);
   }
+  // Number the brand rows
+  document.querySelectorAll('#table-brands tbody tr').forEach((tr, i) => {
+    tr.children[0].textContent = i + 1;
+  });
 
   // EV table
-  const evTbody = document.getElementById('table-ev').querySelector('tbody');
-  const evTop10 = data.ev_stats?.top10 || [];
-  for (const r of evTop10.slice(0, 10)) {
+  const evTbody = document.querySelector('#table-ev tbody');
+  for (const r of (data.ev_stats?.top10 || []).slice(0, 10)) {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${r.rank}</td><td>${r.name}</td><td class="num">${Number(r.sales).toLocaleString()}</td><td>${r.price_range || '—'}</td>`;
     evTbody.appendChild(tr);
