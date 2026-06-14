@@ -108,6 +108,8 @@ def _score_brand(brand: str, claims: list[dict]) -> dict:
         return {
             "brand": brand,
             "total_claims": 0,
+            "overdue_claims": 0,
+            "upcoming_claims": 0,
             "delivery_score": BRAND_TRACK_RECORD.get(brand, 60),
             "gap_score": 100 - BRAND_TRACK_RECORD.get(brand, 60),
             "risk_areas": [],
