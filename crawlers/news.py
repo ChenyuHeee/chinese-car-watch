@@ -43,24 +43,13 @@ HEADERS = {
 
 class NewsCrawler(BaseCrawler):
     name = "news"
-    request_interval = 1.0
+    request_interval = 0.5
 
-    sources = [
-        {
-            "label": "autohome-news",
-            "url": "https://www.autohome.com.cn/news/",
-            "parser": "_parse_autohome",
-        },
-        {
-            "label": "dongchedi-news",
-            "url": "https://www.dongchedi.com/",
-            "parser": "_parse_dongchedi",
-        },
-        {
-            "label": "36kr-auto",
-            "url": "https://36kr.com/newsflashes",
-            "parser": "_parse_36kr",
-        },
+    # Sina finance auto channel IDs
+    SINA_CHANNELS = [
+        ("257", "1777"),   # 汽车行业
+        ("153", "2509"),   # 财经/产业
+        ("257", "2627"),   # 新能源
     ]
 
     def parse(self, html: str, **kwargs) -> list[dict]:
@@ -68,34 +57,73 @@ class NewsCrawler(BaseCrawler):
 
     def run(self) -> list[dict]:
         all_rows = []
-        for src in self.sources:
-            log.info("news: trying %s (%s)", src["label"], src["url"])
-            html = self.fetch(src["url"])
-            if not html:
-                continue
 
-            parser = getattr(self, src["parser"], None)
-            if parser:
-                rows = parser(html, src["label"])
-            else:
-                rows = self._parse_generic(html, src["label"])
+        # ── Primary: Sina JSON API ──
+        for pageid, lid in self.SINA_CHANNELS:
+            try:
+                url = f"https://feed.mix.sina.com.cn/api/roll/get?pageid={pageid}&lid={lid}&num=50"
+                resp = requests.get(url, headers={
+                    "Referer": "https://finance.sina.com.cn/",
+                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+                }, timeout=15)
+                data = resp.json()
+                items = data.get("result", {}).get("data", [])
+                count = 0
+                for item in items:
+                    title = item.get("title", "")
+                    if not title or len(title) < 5:
+                        continue
+                    # Only auto-related
+                    auto_kw = ["车", "新能源", "电动", "电池", "智驾", "自动驾驶", "SUV", "轿车",
+                               "蔚来", "比亚迪", "特斯拉", "理想", "小鹏", "零跑", "极氪", "问界",
+                               "丰田", "大众", "本田", "日产", "奔驰", "宝马", "奥迪", "宁德"]
+                    if not any(kw in title for kw in auto_kw):
+                        continue
 
-            for r in rows:
-                r["source"] = src["label"]
-                r["scraped_at"] = datetime.now().isoformat()
-            all_rows.extend(rows)
-            log.info("  → %d articles from %s", len(rows), src["label"])
-            time.sleep(self.request_interval)
+                    related = [b for b in BRAND_NAMES if b in title]
+                    all_rows.append({
+                        "title": title,
+                        "url": item.get("url", ""),
+                        "summary": item.get("intro", "")[:300],
+                        "published_at": item.get("ctime", "")[:10],
+                        "related_brands": related,
+                        "source": "sina",
+                        "scraped_at": datetime.now().isoformat(),
+                    })
+                    count += 1
+                log.info("news: %d from sina (pageid=%s, lid=%s)", count, pageid, lid)
+                time.sleep(self.request_interval)
+            except Exception as e:
+                log.warning("news: sina channel %s failed: %s", lid, e)
+
+        # ── Secondary: autohome + dongchedi HTML ──
+        for label, url, parser_fn in [
+            ("autohome", "https://www.autohome.com.cn/news/", self._parse_autohome),
+            ("dongchedi", "https://www.dongchedi.com/", self._parse_dongchedi),
+        ]:
+            try:
+                html = self.fetch(url)
+                if html:
+                    rows = parser_fn(html, label)
+                    for r in rows:
+                        r["source"] = label
+                        r["scraped_at"] = datetime.now().isoformat()
+                    all_rows.extend(rows)
+                    log.info("news: %d from %s", len(rows), label)
+                    time.sleep(self.request_interval)
+            except Exception as e:
+                log.warning("news: %s failed: %s", label, e)
 
         # Deduplicate by URL
         seen = set()
         unique = []
         for r in all_rows:
-            if r["url"] not in seen:
-                seen.add(r["url"])
+            url = r.get("url", "")
+            if url and url not in seen:
+                seen.add(url)
                 unique.append(r)
 
-        log.info("news: %d unique articles", len(unique))
+        log.info("news: %d unique articles total", len(unique))
         return unique
 
     def _parse_autohome(self, html: str, source: str) -> list[dict]:
