@@ -82,6 +82,55 @@ def _parse_confidence(text: str) -> str:
     return "medium"
 
 
+def _call_judge(brand: str, debate_transcript: str) -> str:
+    """Make a standalone LLM call for the judge verdict.
+    Avoids AG2 multi-chat context issues by calling DeepSeek directly.
+    """
+    from openai import OpenAI
+    import os
+
+    api_key = os.environ.get("DEEPSEEK_API_KEY", "")
+    if not api_key:
+        return ""
+
+    client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+
+    judge_prompt = load_prompt("critic")
+    system_msg = (
+        f"{judge_prompt}\n\n"
+        f"You are the JUDGE for a debate on whether **{brand}** will survive the next 12 months. "
+        f"Review the debate transcript below. Then produce your FINAL VERDICT.\n\n"
+        f"Output format:\n"
+        f"FINAL RATING: [AAA/AA/A/BBB/BB/B/C]\n"
+        f"CONFIDENCE: [high/medium/low]\n"
+        f"JUSTIFICATION: [one paragraph with specific evidence cited]\n\n"
+        f"## BVS Rating Scale\n"
+        f"- AAA: 行业领导者，现金流充裕，无短期生存风险\n"
+        f"- AA: 强势品牌，具备护城河，但面临特定挑战\n"
+        f"- A: 稳健运营，有差异化优势，外部融资通畅\n"
+        f"- BBB: 经营正常，但过度依赖外部融资或单一车型\n"
+        f"- BB: 高风险，销量持续下滑，融资端承压\n"
+        f"- B: 极度危险，12个月内可能退出市场或被并购\n"
+        f"- C: 已实质性停摆，破产/清算/被接管"
+    )
+
+    try:
+        resp = client.chat.completions.create(
+            model="deepseek-v4-pro",
+            messages=[
+                {"role": "system", "content": system_msg},
+                {"role": "user", "content": f"## Debate Transcript\n{debate_transcript}\n\n## Instructions\nBased on the debate, render your FINAL VERDICT in the specified format."},
+            ],
+            temperature=0.2,
+            max_tokens=2048,
+            extra_body={"thinking": {"type": "enabled"}},
+        )
+        return resp.choices[0].message.content or ""
+    except Exception as e:
+        log.error("Judge API call failed: %s", e)
+        return ""
+
+
 def _build_debate_prompt(brand: str, brand_info: Optional[dict] = None) -> str:
     """Build the initial debate prompt with brand context."""
     lines = [f"## Brand: {brand}"]
@@ -182,39 +231,19 @@ def evaluate_brand(brand: str, dry_run: bool = False) -> dict:
                 "max_turns": 4,
                 "clear_history": True,
             },
-            # Chat 2: Judge renders verdict (no reply needed)
-            {
-                "sender": judge,
-                "recipient": judge,  # judge talks,
-                "message": (
-                    "Review the debate above. Based on the evidence presented by both Red and Blue analysts, "
-                    "produce your final verdict.\n\n"
-                    "Output format:\n"
-                    "FINAL RATING: [AAA/AA/A/BBB/BB/B/C]\n"
-                    "CONFIDENCE: [high/medium/low]\n"
-                    "JUSTIFICATION: [one paragraph]"
-                ),
-                "max_turns": 0,
-                "clear_history": False,
-                "summary_method": "last_msg",
-            },
         ])
 
-        # Extract judge's verdict
-        verdict = ""
-        if len(chat_results) >= 2:
-            chat2 = chat_results[1]
-            if chat2.summary:
-                verdict = str(chat2.summary)
-            elif chat2.chat_history:
-                # Fallback: last message in history
-                verdict = str(chat2.chat_history[-1].get("content", ""))
+        # Extract debate transcript
+        debate_transcript = ""
+        if chat_results and chat_results[0].chat_history:
+            messages = chat_results[0].chat_history
+            for msg in messages[-6:]:  # last 6 messages (3 full exchanges)
+                role = msg.get("name", msg.get("role", "unknown"))
+                content = str(msg.get("content", ""))[:2000]
+                debate_transcript += f"\n--- {role} ---\n{content}\n"
 
-        if not verdict and len(chat_results) >= 1:
-            # Last resort: get it from chat 1's last exchange
-            ch = chat_results[0].chat_history
-            if ch:
-                verdict = str(ch[-1].get("content", ""))
+        # Step 2: Judge renders verdict via standalone LLM call
+        verdict = _call_judge(brand, debate_transcript)
 
     except Exception as e:
         log.error("BVS debate for %s failed: %s", brand, e)
