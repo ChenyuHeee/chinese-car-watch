@@ -13,7 +13,8 @@ CHARTS_DIR = Path(__file__).resolve().parent.parent / "charts"
 CHARTS_DIR.mkdir(exist_ok=True)
 
 plt.rcParams.update({
-    "font.family": "Heiti TC",
+    "font.sans-serif": ["Heiti TC", "STHeiti", "PingFang SC", "Songti SC"],
+    "font.family": "sans-serif",
     "font.size": 12,
     "axes.titlesize": 14,
     "axes.labelsize": 12,
@@ -53,7 +54,7 @@ ax.legend(frameon=False)
 ax.set_ylim(0, 20)
 ax.grid(axis="y", alpha=0.2)
 plt.tight_layout()
-fig.savefig(CHARTS_DIR / "profit-comparison.png", dpi=150, bbox_inches="tight")
+fig.savefig(CHARTS_DIR / "profit-comparison.png", dpi=100, bbox_inches="tight", facecolor="white")
 plt.close()
 print("Chart 1 saved: profit-comparison.png")
 
@@ -98,7 +99,7 @@ ax.set_title("供应链集中度：谁在为行业「造铲子」")
 ax.set_xlim(0, 20)
 ax.grid(axis="x", alpha=0.2)
 plt.tight_layout()
-fig.savefig(CHARTS_DIR / "supplier-concentration.png", dpi=150, bbox_inches="tight")
+fig.savefig(CHARTS_DIR / "supplier-concentration.png", dpi=100, bbox_inches="tight", facecolor="white")
 plt.close()
 print("Chart 3 saved: supplier-concentration.png")
 
