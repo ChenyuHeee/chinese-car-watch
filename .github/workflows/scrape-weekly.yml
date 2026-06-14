@@ -1,0 +1,47 @@
+name: Weekly Sales Scrape
+
+on:
+  schedule:
+    # Every Monday at 08:00 UTC (16:00 Beijing time)
+    - cron: "0 8 * * 1"
+  workflow_dispatch:  # allow manual trigger from GitHub UI
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scraper
+        id: scrape
+        run: |
+          python scripts/scrape_sales.py
+          echo "scrape_exit=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Generate reports
+        if: steps.scrape.outputs.scrape_exit == '0'
+        run: python scripts/generate_charts.py
+
+      - name: Commit & push updated data
+        if: steps.scrape.outputs.scrape_exit == '0'
+        run: |
+          git config user.name "data-bot"
+          git config user.email "data-bot@china-auto-trends.dev"
+          git add data/ charts/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "data: weekly scrape $(date +%Y-%m-%d)"
+            git push
+          fi
