@@ -116,7 +116,7 @@ const API = '/auto/api';
     if (p.bvs && p.bvs.length) {
       document.getElementById('kpi-bvs').textContent = p.bvs[0].rating;
       document.getElementById('table-bvs').innerHTML = p.bvs.map(r =>
-        `<tr><td>${r.brand}</td><td><span class="tag ${r.rating}">${r.rating}</span></td>
+        `<tr><td><a href="/auto/brand/${encodeURIComponent(r.brand)}">${r.brand}</a></td><td><span class="tag ${r.rating}">${r.rating}</span></td>
          <td class="num">${r.score}</td></tr>`
       ).join('');
     }
@@ -125,7 +125,7 @@ const API = '/auto/api';
     if (p.scem && p.scem.length) {
       document.getElementById('kpi-scem').textContent = p.scem[p.scem.length-1].risk || '—';
       document.getElementById('table-scem').innerHTML = p.scem.map(r =>
-        `<tr><td>${r.brand}</td><td><span class="tag ${r.risk}">${r.risk}</span></td>
+        `<tr><td><a href="/auto/brand/${encodeURIComponent(r.brand)}">${r.brand}</a></td><td><span class="tag ${r.risk}">${r.risk}</span></td>
          <td class="num">${r.exposure}</td></tr>`
       ).join('');
     }
@@ -133,7 +133,7 @@ const API = '/auto/api';
     // TDG
     if (p.tdg && p.tdg.length) {
       document.getElementById('table-tdg').innerHTML = p.tdg.map(r =>
-        `<tr><td>${r.brand}</td><td>${r.gap}% gap</td>
+        `<tr><td><a href="/auto/brand/${encodeURIComponent(r.brand)}">${r.brand}</a></td><td>${r.gap}% gap</td>
          <td class="num">${r.delivery}</td></tr>`
       ).join('');
     }
