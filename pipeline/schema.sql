@@ -79,6 +79,7 @@ CREATE TABLE IF NOT EXISTS social_sentiment (
 CREATE TABLE IF NOT EXISTS stock_prices (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     stock_code TEXT NOT NULL,
+    brand TEXT,
     trade_date TEXT NOT NULL,
     open REAL, high REAL, low REAL, close REAL,
     volume REAL,

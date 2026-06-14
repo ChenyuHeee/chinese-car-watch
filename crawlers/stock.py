@@ -1,85 +1,120 @@
 """
-Stock price crawler using akshare.
-Fetches A-share and US-listed Chinese auto stocks.
+Stock price crawler via Sina Finance API.
+Works from Alibaba Cloud ECS (unlike akshare which hits blocked Eastmoney endpoints).
 """
 
 import logging
+import re
+import time
 from datetime import datetime
-from typing import Optional
 
-import akshare as ak
+import requests
 
 from crawlers.base import BaseCrawler
 
 log = logging.getLogger(__name__)
 
-# Listed Chinese auto companies
+# Sina stock code format
+# A-share: sh600000, sz000001
+# US: gb_tsla, gb_nio
 STOCKS = [
-    # A-shares
-    {"code": "002594", "market": "a", "brand": "比亚迪", "label": "BYD A"},
-    {"code": "601127", "market": "a", "brand": "问界", "label": "Seres"},
-    {"code": "601238", "market": "a", "brand": "广汽埃安", "label": "GAC Group"},
-    {"code": "000625", "market": "a", "brand": "长安汽车", "label": "Changan"},
-    # US/HK listed
-    {"code": "106.NIO", "market": "us", "brand": "蔚来", "label": "NIO US"},
-    {"code": "105.LI", "market": "us", "brand": "理想", "label": "Li Auto US"},
-    {"code": "108.XPEV", "market": "us", "brand": "小鹏", "label": "XPeng US"},
-    {"code": "107.ZK", "market": "us", "brand": "极氪", "label": "Zeekr US"},
-    {"code": "103.TSLA", "market": "us", "brand": "特斯拉", "label": "Tesla US"},
+    {"sina_code": "sz002594", "code": "002594.SZ", "brand": "比亚迪", "market": "a"},
+    {"sina_code": "sh601127", "code": "601127.SH", "brand": "问界", "market": "a"},
+    {"sina_code": "sh601238", "code": "601238.SH", "brand": "广汽", "market": "a"},
+    {"sina_code": "sz000625", "code": "000625.SZ", "brand": "长安汽车", "market": "a"},
+    {"sina_code": "sh600104", "code": "600104.SH", "brand": "上汽集团", "market": "a"},
+    {"sina_code": "sz000800", "code": "000800.SZ", "brand": "一汽", "market": "a"},
+    {"sina_code": "gb_nio", "code": "NIO", "brand": "蔚来", "market": "us"},
+    {"sina_code": "gb_li", "code": "LI", "brand": "理想", "market": "us"},
+    {"sina_code": "gb_xpev", "code": "XPEV", "brand": "小鹏", "market": "us"},
+    {"sina_code": "gb_zk", "code": "ZK", "brand": "极氪", "market": "us"},
+    {"sina_code": "gb_tsla", "code": "TSLA", "brand": "特斯拉", "market": "us"},
 ]
+
+SINA_API = "https://hq.sinajs.cn/list={codes}"
+HEADERS = {
+    "Referer": "https://finance.sina.com.cn",
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+}
 
 
 class StockCrawler(BaseCrawler):
     name = "stock"
-    request_interval = 2.0
+    request_interval = 0.5
 
     def parse(self, html: str, **kwargs) -> list[dict]:
-        """Not used — stock data comes from akshare API, not HTML."""
         return []
 
     def run(self) -> list[dict]:
-        """Fetch stock data for all tracked companies."""
-        all_rows = []
-        end_date = datetime.now().strftime("%Y%m%d")
-        start_date = "20260101"
+        """Fetch latest stock data via Sina API."""
+        codes = ",".join(s["sina_code"] for s in STOCKS)
+        url = SINA_API.format(codes=codes)
 
-        for stock in STOCKS:
+        log.info("stock: fetching %d stocks via Sina API", len(STOCKS))
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=15)
+            resp.raise_for_status()
+            resp.encoding = "gb2312"
+            text = resp.text
+        except Exception as e:
+            log.error("stock: API request failed: %s", e)
+            return []
+
+        results = []
+        today = datetime.now().strftime("%Y-%m-%d")
+
+        for line in text.strip().split("\n"):
+            if not line.strip():
+                continue
+
+            # Parse Sina's var lines
+            m = re.match(r'var hq_str_(\w+)="(.+)"', line)
+            if not m:
+                continue
+
+            code = m.group(1)
+            fields = m.group(2).split(",")
+
+            # Find matching stock
+            stock = next((s for s in STOCKS if s["sina_code"] == code), None)
+            if not stock or len(fields) < 4:
+                continue
+
             try:
-                log.info("stock: fetching %s (%s)", stock["label"], stock["code"])
                 if stock["market"] == "a":
-                    df = ak.stock_zh_a_hist(
-                        symbol=stock["code"], period="daily",
-                        start_date=start_date, end_date=end_date, adjust="qfq",
-                    )
+                    # A-share fields: name, open, prev_close, price, high, low, ...
+                    name = fields[0]
+                    open_p = float(fields[1]) if fields[1] else 0
+                    prev_close = float(fields[2]) if fields[2] else 0
+                    price = float(fields[3]) if fields[3] else 0
+                    high = float(fields[4]) if fields[4] else 0
+                    low = float(fields[5]) if fields[5] else 0
+                    volume = float(fields[8]) if len(fields) > 8 and fields[8] else 0
                 else:
-                    df = ak.stock_us_hist(
-                        symbol=stock["code"], period="daily",
-                        start_date=start_date, end_date=end_date, adjust="qfq",
-                    )
+                    # US stock fields: name, price, change_pct, ...
+                    name = fields[0]
+                    price = float(fields[1]) if fields[1] else 0
+                    open_p = float(fields[5]) if len(fields) > 5 and fields[5] else 0
+                    high = float(fields[6]) if len(fields) > 6 and fields[6] else 0
+                    low = float(fields[7]) if len(fields) > 7 and fields[7] else 0
+                    prev_close = price  # approximate
+                    volume = 0
 
-                for _, row in df.iterrows():
-                    all_rows.append({
-                        "stock_code": stock["code"],
-                        "brand": stock["brand"],
-                        "trade_date": str(row.get("日期", "")),
-                        "open": float(row.get("开盘", 0) or 0),
-                        "high": float(row.get("最高", 0) or 0),
-                        "low": float(row.get("最低", 0) or 0),
-                        "close": float(row.get("收盘", 0) or 0),
-                        "volume": float(row.get("成交量", 0) or 0),
-                    })
-                log.info("  → %d days for %s", len(df), stock["label"])
+                results.append({
+                    "stock_code": stock["code"],
+                    "brand": stock["brand"],
+                    "trade_date": today,
+                    "open": open_p,
+                    "high": high,
+                    "low": low,
+                    "close": price,
+                    "volume": volume,
+                })
+            except (ValueError, IndexError) as e:
+                log.warning("stock: parse error for %s: %s", stock["brand"], e)
 
-            except Exception as e:
-                log.warning("stock: failed %s (%s): %s", stock["label"], stock["code"], e)
-
-        # Attach metadata
-        now = datetime.now().isoformat()
-        for r in all_rows:
-            r["scraped_at"] = now
-
-        log.info("stock: %d total rows", len(all_rows))
-        return all_rows
+        log.info("stock: %d prices fetched", len(results))
+        return results
 
 
 def save_stock_data(rows: list[dict]):
@@ -88,26 +123,22 @@ def save_stock_data(rows: list[dict]):
     db = get_db()
     for r in rows:
         db.execute("""
-            INSERT OR REPLACE INTO stock_prices (stock_code, trade_date, open, high, low, close, volume, scraped_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+            INSERT OR REPLACE INTO stock_prices
+            (stock_code, trade_date, open, high, low, close, volume, scraped_at, brand)
+            VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), ?)
         """, (
             r["stock_code"], r["trade_date"],
             r["open"], r["high"], r["low"], r["close"], r["volume"],
+            r["brand"],
         ))
     log.info("stock: saved %d rows to DB", len(rows))
 
 
-# ── CLI ──
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
     crawler = StockCrawler()
     rows = crawler.run()
     if rows:
         save_stock_data(rows)
-        # Quick summary
-        from collections import defaultdict
-        latest = defaultdict(list)
         for r in rows:
-            latest[r["brand"]].append(r["close"])
-        for brand, prices in latest.items():
-            print(f"  {brand}: latest close {prices[-1]:.2f}")
+            print(f"  {r['brand']}: {r['close']:.2f} ({r['stock_code']})")
