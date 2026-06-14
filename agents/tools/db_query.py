@@ -170,6 +170,35 @@ def query_stock(brand: str, days: int = 30) -> str:
     }, ensure_ascii=False, indent=2)
 
 
+def query_financial(brand: str) -> str:
+    """Query latest financial report data for a company.
+
+    Args:
+        brand: brand name (e.g. '比亚迪', '蔚来')
+    Returns revenue, profit, margins, ROE, debt ratio, etc.
+    """
+    from pipeline.db import get_db
+    db = get_db()
+    rows = db.query("""
+        SELECT report_date, revenue, revenue_yoy, net_profit, net_profit_yoy,
+               gross_margin, net_margin, roe, debt_ratio, eps, ocf_per_share
+        FROM financial_reports WHERE brand=?
+        ORDER BY report_date DESC LIMIT 4
+    """, (brand,))
+    if not rows:
+        return json.dumps({"message": f"No financial data for '{brand}'"})
+    return json.dumps([{
+        "report_date": r["report_date"][:10] if r["report_date"] else "",
+        "revenue_亿": r["revenue"],
+        "revenue_yoy": f"{r['revenue_yoy']}%",
+        "net_profit_亿": r["net_profit"],
+        "gross_margin": f"{r['gross_margin']}%",
+        "net_margin": f"{r['net_margin']}%",
+        "roe": f"{r['roe']}%",
+        "debt_ratio": f"{r['debt_ratio']}%",
+    } for r in rows], ensure_ascii=False, indent=2)
+
+
 # AG2 tool registry
 DB_TOOLS = [
     query_sales,
@@ -178,4 +207,5 @@ DB_TOOLS = [
     query_supply_chain,
     query_latest_ranking,
     query_stock,
+    query_financial,
 ]
