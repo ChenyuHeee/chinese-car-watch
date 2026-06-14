@@ -47,9 +47,10 @@ class NewsCrawler(BaseCrawler):
 
     # Sina finance auto channel IDs
     SINA_CHANNELS = [
-        ("257", "1777"),   # 汽车行业
-        ("153", "2509"),   # 财经/产业
-        ("257", "2627"),   # 新能源
+        ("153", "2509"),   # 财经要闻
+        ("153", "2510"),   # 产业经济
+        ("153", "2515"),   # 公司新闻
+        ("153", "2516"),   # 行业新闻
     ]
 
     def parse(self, html: str, **kwargs) -> list[dict]:
@@ -73,14 +74,12 @@ class NewsCrawler(BaseCrawler):
                     title = item.get("title", "")
                     if not title or len(title) < 5:
                         continue
-                    # Only auto-related
-                    auto_kw = ["车", "新能源", "电动", "电池", "智驾", "自动驾驶", "SUV", "轿车",
-                               "蔚来", "比亚迪", "特斯拉", "理想", "小鹏", "零跑", "极氪", "问界",
-                               "丰田", "大众", "本田", "日产", "奔驰", "宝马", "奥迪", "宁德"]
-                    if not any(kw in title for kw in auto_kw):
-                        continue
-
+                    # Check for brand mentions or auto-related keywords
+                    auto_kw = ["车", "新能源", "电动", "电池", "智驾", "自动驾驶", "出行", "锂",
+                               "宁德", "充电", "芯片", "固态", "换电"]
                     related = [b for b in BRAND_NAMES if b in title]
+                    if not related and not any(kw in title for kw in auto_kw):
+                        continue
                     all_rows.append({
                         "title": title,
                         "url": item.get("url", ""),
