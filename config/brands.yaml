@@ -1,0 +1,278 @@
+# AutoInsight Brand Registry
+# 品牌注册表 — 手维护，Agent 运行时读取
+
+brands:
+  - name: 比亚迪
+    name_en: BYD
+    parent: 比亚迪集团
+    founded: 1995
+    type: nev_native
+    is_listed: true
+    stock_codes: ["002594.SZ", "1211.HK"]
+    notes: 全球NEV销量第一，垂直整合（电池+芯片+整车）
+
+  - name: 特斯拉
+    name_en: Tesla
+    parent: Tesla Inc.
+    founded: 2003
+    type: nev_native
+    is_listed: true
+    stock_codes: ["TSLA"]
+    notes: 全球纯电标杆，FSD领先，上海工厂产能~100万/年
+
+  - name: 吉利
+    name_en: Geely
+    parent: 吉利控股集团
+    founded: 1986
+    type: traditional
+    is_listed: true
+    stock_codes: ["0175.HK"]
+    notes: 多品牌战略（吉利/领克/极氪/银河/沃尔沃），NEV转型激进
+
+  - name: 理想
+    name_en: Li Auto
+    parent: 理想汽车
+    founded: 2015
+    type: nev_native
+    is_listed: true
+    stock_codes: ["LI", "2015.HK"]
+    notes: 增程式先驱，高端家庭SUV定位，盈利能力最强新势力
+
+  - name: 蔚来
+    name_en: NIO
+    parent: 蔚来集团
+    founded: 2014
+    type: nev_native
+    is_listed: true
+    stock_codes: ["NIO", "9866.HK"]
+    notes: 高端定位，换电模式，NIO House服务网络
+
+  - name: 小鹏
+    name_en: XPeng
+    parent: 小鹏汽车
+    founded: 2014
+    type: nev_native
+    is_listed: true
+    stock_codes: ["XPEV", "9868.HK"]
+    notes: 智能化标签，端到端智驾投入大，MONA子品牌下沉
+
+  - name: 零跑
+    name_en: Leapmotor
+    parent: 零跑汽车
+    founded: 2015
+    type: nev_native
+    is_listed: true
+    stock_codes: ["9863.HK"]
+    notes: 性价比路线，Stellantis战略合作，海外出口
+
+  - name: 小米汽车
+    name_en: Xiaomi EV
+    parent: 小米集团
+    founded: 2021
+    type: nev_native
+    is_listed: true
+    stock_codes: ["1810.HK"]
+    notes: 手机厂跨界，SU7爆款，品牌+渠道+生态优势
+
+  - name: 问界
+    name_en: AITO
+    parent: 赛力斯集团（华为深度合作）
+    founded: 2021
+    type: nev_native
+    is_listed: true
+    stock_codes: ["601127.SH"]
+    notes: 华为智选模式，鸿蒙座舱+ADS智驾
+
+  - name: 极氪
+    name_en: Zeekr
+    parent: 吉利控股集团
+    founded: 2021
+    type: nev_native
+    is_listed: true
+    stock_codes: ["ZK"]
+    notes: 吉利旗下高端纯电，猎装车/MPV差异化
+
+  - name: 广汽埃安
+    name_en: GAC Aion
+    parent: 广汽集团
+    founded: 2017
+    type: nev_native
+    is_listed: false
+    stock_codes: []
+    notes: 广汽旗下NEV品牌，网约车占比高，高端化挑战
+
+  - name: 深蓝汽车
+    name_en: Deepal
+    parent: 长安汽车
+    founded: 2022
+    type: nev_native
+    is_listed: false
+    stock_codes: []
+    notes: 长安旗下NEV品牌，增程+纯电双路线
+
+  - name: 腾势
+    name_en: Denza
+    parent: 比亚迪（90%）+ 奔驰（10%）
+    founded: 2010
+    type: nev_native
+    is_listed: false
+    stock_codes: []
+    notes: 比亚迪高端品牌，D9 MPV成功，品牌向上
+
+  - name: 方程豹
+    name_en: Fangchengbao
+    parent: 比亚迪
+    founded: 2023
+    type: nev_native
+    is_listed: false
+    stock_codes: []
+    notes: 比亚迪个性化品牌，硬派越野/SUV定位
+
+  - name: 阿维塔
+    name_en: Avatr
+    parent: 长安+华为+宁德时代
+    founded: 2018
+    type: nev_native
+    is_listed: false
+    stock_codes: []
+    notes: CHN平台，华为HI模式，设计感强
+
+  - name: 智己
+    name_en: IM Motors
+    parent: 上汽集团+阿里巴巴+张江高科
+    founded: 2020
+    type: nev_native
+    is_listed: false
+    stock_codes: []
+    notes: 上汽高端纯电，智驾+L6/LS6
+
+  - name: 乐道
+    name_en: ONVO
+    parent: 蔚来
+    founded: 2024
+    type: nev_native
+    is_listed: false
+    stock_codes: []
+    notes: 蔚来子品牌，家庭定位，共享换电网络
+
+  - name: 岚图
+    name_en: Voyah
+    parent: 东风汽车
+    founded: 2020
+    type: nev_native
+    is_listed: false
+    stock_codes: []
+    notes: 东风高端NEV，增程+纯电，销量爬坡中
+
+  - name: 大众
+    name_en: Volkswagen
+    parent: 大众汽车集团
+    founded: 1937
+    type: foreign
+    is_listed: true
+    stock_codes: ["VOW3.DE"]
+    notes: 中国市场份额最大外资品牌，ID系列NEV转型中
+
+  - name: 丰田
+    name_en: Toyota
+    parent: 丰田汽车
+    founded: 1937
+    type: foreign
+    is_listed: true
+    stock_codes: ["TM", "7203.T"]
+    notes: 全球最大车企，混动技术领先，纯电转型缓慢
+
+  - name: 本田
+    name_en: Honda
+    parent: 本田技研
+    founded: 1948
+    type: foreign
+    is_listed: true
+    stock_codes: ["HMC", "7267.T"]
+    notes: 中国市场承压，e:N纯电系列表现不佳
+
+  - name: 日产
+    name_en: Nissan
+    parent: 日产汽车
+    founded: 1933
+    type: foreign
+    is_listed: true
+    stock_codes: ["7201.T"]
+    notes: 中国市场下滑严重，与本田合并谈判
+
+  - name: 奔驰
+    name_en: Mercedes-Benz
+    parent: 梅赛德斯-奔驰集团
+    founded: 1926
+    type: foreign
+    is_listed: true
+    stock_codes: ["MBG.DE"]
+    notes: 豪华品牌标杆，EQ纯电系列，智能化加速
+
+  - name: 宝马
+    name_en: BMW
+    parent: 宝马集团
+    founded: 1916
+    type: foreign
+    is_listed: true
+    stock_codes: ["BMW.DE"]
+    notes: 豪华品牌，i系列纯电，中国市场贡献最大
+
+  - name: 奥迪
+    name_en: Audi
+    parent: 大众汽车集团
+    founded: 1909
+    type: foreign
+    is_listed: false
+    stock_codes: []
+    notes: 一汽奥迪+上汽奥迪双合资，e-tron系列
+
+  - name: 五菱
+    name_en: Wuling
+    parent: 上汽通用五菱（上汽+通用+五菱）
+    founded: 2002
+    type: joint_venture
+    is_listed: false
+    stock_codes: []
+    notes: 宏光MINIEV现象级产品，微型电动车王者
+
+  - name: 鸿蒙智行
+    name_en: Harmony Mobility
+    parent: 华为（技术赋能，非控股）
+    founded: 2023
+    type: nev_native
+    is_listed: false
+    stock_codes: []
+    notes: 华为智选车模式统一品牌，含问界/智界/享界/尊界
+
+# 已知的供应商依赖关系
+suppliers:
+  - name: 宁德时代
+    name_en: CATL
+    component: battery
+    dependency_brands: [比亚迪, 特斯拉, 蔚来, 小鹏, 理想, 吉利, 零跑, 极氪, 问界, 阿维塔, 智己, 岚图, 小米汽车]
+    notes: 全球最大动力电池供应商，市占率~37%（中国）
+
+  - name: 华为
+    name_en: Huawei
+    component: intelligent_driving
+    dependency_brands: [问界, 阿维塔, 极狐, 广汽埃安, 长安, 奇瑞]
+    notes: ADS智驾方案+鸿蒙座舱，HI模式 vs 智选模式
+
+  - name: 地平线
+    name_en: Horizon Robotics
+    component: chip
+    dependency_brands: [理想, 比亚迪, 长安, 广汽埃安]
+    notes: 征程系列智驾芯片，国产替代Mobileye
+
+  - name: 博世
+    name_en: Bosch
+    component: chassis_braking
+    dependency_brands: [大众, 丰田, 奔驰, 宝马, 奥迪, 比亚迪, 吉利, 长城]
+    notes: 全球最大汽车零部件供应商
+
+  - name: 弗迪电池
+    name_en: FinDreams Battery
+    component: battery
+    dependency_brands: [比亚迪, 丰田, 特斯拉, 福特, 起亚]
+    notes: 比亚迪旗下电池公司，刀片电池

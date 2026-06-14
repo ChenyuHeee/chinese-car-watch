@@ -1,0 +1,15 @@
+# AutoInsight Cron Jobs
+# Install: crontab deploy/crontab.txt
+# Note: these run inside docker containers to avoid polluting the host
+
+# Daily 9:00 — Crawl sales data
+0 9 * * * cd /var/www/insight/auto && docker compose exec -T web python -m crawlers.sales && docker compose exec -T web python -m pipeline.etl seed
+
+# Weekly Monday 10:00 — Run BVS analysis
+0 10 * * 1 cd /var/www/insight/auto && docker compose exec -T web python -m agents.products.bvs --all --save
+
+# Weekly Monday 11:00 — Generate weekly report
+0 11 * * 1 cd /var/www/insight/auto && docker compose exec -T web python -m agents.products.weekly_report
+
+# Monthly 1st 10:00 — DAI scan for new models
+0 10 1 * * cd /var/www/insight/auto && docker compose exec -T web python -m agents.products.dai

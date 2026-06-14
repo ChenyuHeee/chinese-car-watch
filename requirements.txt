@@ -1,5 +1,19 @@
+# Multi-Agent Framework
+ag2[openai]>=0.13.0
+
+# Data
+pandas>=2.2.0
+akshare>=1.16.0
+
+# Web
+fastapi>=0.115.0
+uvicorn>=0.34.0
+
+# Scraping
 requests>=2.31.0
 beautifulsoup4>=4.12.0
-pandas>=2.2.0
-matplotlib>=3.8.0
 lxml>=5.0.0
+
+# Misc
+pyyaml>=6.0
+python-dotenv>=1.0.0
