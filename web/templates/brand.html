@@ -78,14 +78,16 @@
 </main>
 
 <script>
-const brand = window.location.pathname.split('/').pop();
+(function(){
+var brand = decodeURIComponent(window.location.pathname.split('/').pop());
 document.title = brand + ' · AutoInsight';
+document.getElementById('brand-name').textContent = brand;
 
 (async function(){
   try {
-    const resp = await fetch('/auto/api/brand/' + encodeURIComponent(brand));
-    if (!resp.ok) { document.getElementById('analysis').textContent = 'No data for ' + brand; return; }
-    const d = await resp.json();
+    var resp = await fetch('/auto/api/brand/' + encodeURIComponent(brand));
+    if (!resp.ok) { document.getElementById('analysis').textContent = 'No data for ' + brand + ' (status ' + resp.status + ')'; return; }
+    var d = await resp.json();
 
     document.getElementById('brand-name').textContent = d.brand;
     let sub = [];
