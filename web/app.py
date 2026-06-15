@@ -45,6 +45,43 @@ async def dashboard():
     return HTMLResponse("<h1>AutoInsight</h1>")
 
 
+@app.get("/auto/report/latest")
+async def latest_report_page():
+    """Render the latest monthly report from DB."""
+    db = _get_db()
+    row = db.query_one("SELECT * FROM agent_results WHERE product='weekly_report' ORDER BY run_date DESC LIMIT 1")
+    if not row:
+        return HTMLResponse("<h1>No report yet</h1>")
+    md = row["report_md"]
+    html_body = _simple_md(md)
+    return HTMLResponse(f"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Monthly Report · AutoInsight</title>
+<style>
+  :root{{--text:#1a1a1a;--muted:#555;--accent:#1e40af;--border:#e5e5e5;--max-w:880px}}
+  body{{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC",sans-serif;font-size:16px;line-height:1.8;color:var(--text);background:#fff}}
+  main{{max-width:var(--max-w);width:90%;margin:0 auto;padding:56px 0 48px}}
+  a{{color:var(--accent);text-decoration:none}}a:hover{{text-decoration:underline}}
+  .back{{font-size:14px;color:var(--muted);margin-bottom:32px}}
+  h1{{font-size:28px;margin-bottom:8px}}h2{{font-size:20px;margin:40px 0 16px;padding-bottom:6px;border-bottom:2px solid #1a1a1a}}
+  h3{{font-size:17px;margin:24px 0 10px}}
+  table{{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px}}
+  th,td{{border:1px solid var(--border);padding:8px 14px}}
+  th{{background:#f8f8f6;font-weight:600}}
+  blockquote{{border-left:3px solid var(--accent);padding:8px 20px;margin:16px 0;color:var(--muted);background:#f8f8f6}}
+  hr{{border:none;border-top:1px solid var(--border);margin:24px 0}}
+  ul,ol{{margin:8px 0 16px 24px}}li{{margin-bottom:4px}}
+  strong{{color:#1a1a1a}}
+  footer{{margin-top:48px;padding-top:16px;border-top:1px solid var(--border);font-size:13px;color:#aaa}}
+</style></head>
+<body><main>
+<p class="back"><a href="/auto">&larr; AutoInsight</a></p>
+{html_body}
+<footer><p>AutoInsight · <a href="https://github.com/ChenyuHeee/chinese-car-watch">GitHub</a> · Auto-generated monthly</p></footer>
+</main></body></html>""")
+
+
 @app.get("/auto/research/nev-industry-2026h1")
 async def research_report():
     """Investment research report — China NEV Industry H1 2026."""
@@ -498,6 +535,68 @@ async def brand_page(brand_name: str):
 
 
 # ── API Endpoints ──────────────────────────────────────────
+
+def _simple_md(md: str) -> str:
+    """Minimal markdown→HTML converter."""
+    import re
+    lines = md.split("\n")
+    out = []
+    in_list = False
+    for line in lines:
+        if line.strip() in ("---", "***", "___"):
+            if in_list: out.append("</ul>"); in_list = False
+            out.append("<hr>")
+            continue
+        if line.startswith("# "):
+            if in_list: out.append("</ul>"); in_list = False
+            out.append(f"<h1>{line[2:]}</h1>")
+            continue
+        if line.startswith("## "):
+            if in_list: out.append("</ul>"); in_list = False
+            out.append(f"<h2>{line[3:]}</h2>")
+            continue
+        if line.startswith("### "):
+            if in_list: out.append("</ul>"); in_list = False
+            out.append(f"<h3>{line[4:]}</h3>")
+            continue
+        if line.startswith("> "):
+            if in_list: out.append("</ul>"); in_list = False
+            out.append(f"<blockquote>{_inline_md(line[2:])}</blockquote>")
+            continue
+        if "|" in line and line.count("|") >= 2:
+            if in_list: out.append("</ul>"); in_list = False
+            cells = [c.strip() for c in line.split("|")[1:-1]]
+            if all(c.replace("-","").replace(":","").strip() == "" for c in cells):
+                continue
+            tag = "th" if not out or not out[-1].startswith("<tr>") else "td"
+            row_html = "".join(f"<{tag}>{_inline_md(c)}</{tag}>" for c in cells)
+            if not out or not out[-1].startswith("<tr"):
+                out.append("<table>")
+            out.append(f"<tr>{row_html}</tr>")
+            continue
+        if line.startswith("- "):
+            if not in_list: out.append("<ul>"); in_list = True
+            out.append(f"<li>{_inline_md(line[2:])}</li>")
+            continue
+        if in_list: out.append("</ul>"); in_list = False
+        if line.strip():
+            out.append(f"<p>{_inline_md(line)}</p>")
+        elif out and not out[-1].startswith("<table"):
+            out.append("<br>")
+    if in_list: out.append("</ul>")
+    return "\n".join(out)
+
+
+def _inline_md(text: str) -> str:
+    """Handle inline: bold, italic, code, links, images."""
+    import re
+    text = re.sub(r'!\[([^\]]*)\]\(([^\)]+)\)', r'<img src="\2" alt="\1" style="max-width:100%">', text)
+    text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
+    text = re.sub(r'\*(.+?)\*', r'<em>\1</em>', text)
+    text = re.sub(r'`([^`]+)`', r'<code>\1</code>', text)
+    text = re.sub(r'\[([^\]]+)\]\(([^\)]+)\)', r'<a href="\2">\1</a>', text)
+    return text
+
 
 @app.get("/auto/api/health")
 async def health_check():
